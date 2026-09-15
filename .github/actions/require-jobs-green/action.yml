@@ -1,0 +1,26 @@
+name: Require jobs green
+description: Fail unless every supplied job result is success.
+
+# A composite action, deliberately, and not a reusable workflow. A reusable workflow runs its own job,
+# so its check context nests as "<caller job> / <inner job>" — which would stop the caller's job being
+# reachable as the bare `ci-complete` context the shared ruleset requires.
+
+inputs:
+  results:
+    # No expression syntax in this description. GitHub evaluates action metadata, so even an
+    # illustrative dollar-brace here is parsed as an expression and fails the action to load.
+    description: Space-separated job results, normally the joined needs results.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        RESULTS: ${{ inputs.results }}
+      run: |
+        test -n "$RESULTS" || { echo "::error::No job results were supplied."; exit 1; }
+        for result in $RESULTS; do
+          test "$result" = "success" || { echo "::error::A gating job reported '$result'."; exit 1; }
+        done
+        echo "Every gating job reported success."
