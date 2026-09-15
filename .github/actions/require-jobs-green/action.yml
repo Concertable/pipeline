@@ -7,7 +7,7 @@ description: Fail unless every supplied job result is success.
 
 inputs:
   results:
-    description: Space-separated job results, normally ${{ join(needs.*.result, ' ') }}.
+    description: Space-separated job results. Callers pass join(needs.*.result, ' ') — written without expression syntax because GitHub evaluates ${{ }} in action metadata, where 'needs' does not exist.
     required: true
 
 runs:
