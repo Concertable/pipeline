@@ -41,7 +41,7 @@ Available contracts:
 `pwsh scripts/apply-repository-settings.ps1 -Repository Concertable/<name> -OwnerTeamSlug <declared-slug>` to create/update teams, grant the
 declared owner team, create the release environment, and replace the main ruleset after resolving live team
 and repository IDs. The script strips derived team slugs from create requests and verifies the returned
-policy-bearing fields. Valid owner slugs are declared in `repository-settings/teams.json`. Templates contain no secret values.
+policy-bearing fields, including the repository settings in `repository-settings/repository.json` — a merge queue is unusable without `allow_auto_merge`, and the merge methods there are what the ruleset's `allowed_merge_methods` expects. Valid owner slugs are declared in `repository-settings/teams.json`. Templates contain no secret values.
 
 The main ruleset requires no approving review, deliberately. GitHub forbids a pull request's author from
 approving it, so in a single-maintainer organization an approval count of 1 is unsatisfiable: every merge
