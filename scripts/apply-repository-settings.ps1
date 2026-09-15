@@ -62,6 +62,14 @@ if ($PSCmdlet.ShouldProcess("$OwnerTeamSlug -> $Repository", 'Grant maintain per
     gh api --method PUT "orgs/$organization/teams/$OwnerTeamSlug/repos/$organization/$repositoryName" -f permission=maintain | Out-Null
 }
 
+# A merge queue is unusable unless the repository allows auto-merge: queueing a pull request goes through
+# enablePullRequestAutoMerge, which fails with "Auto merge is not allowed for this repository". Applying the
+# ruleset without this leaves a queue nothing can enter.
+$repositorySettings = Get-Content -LiteralPath (Join-Path $root 'repository-settings/repository.json') -Raw
+if ($PSCmdlet.ShouldProcess($Repository, 'Apply repository settings')) {
+    $repositorySettings | gh api --method PATCH "repos/$Repository" --input - | Out-Null
+}
+
 $environment = Get-Content -LiteralPath (Join-Path $root 'repository-settings/environments/release.json') -Raw
 if ($PSCmdlet.ShouldProcess("$Repository/release", 'Apply release environment policy')) {
     $environment | gh api --method PUT "repos/$Repository/environments/release" --input - | Out-Null
@@ -87,6 +95,9 @@ if (-not $WhatIfPreference) {
         $actualRuleset = gh api "repos/$Repository/rulesets/$($appliedRuleset.id)" | ConvertFrom-Json
         Assert-TemplateEqual $expectedRuleset $actualRuleset "ruleset[$($expectedRuleset.name)]"
     }
+
+    $actualRepository = gh api "repos/$Repository" | ConvertFrom-Json
+    Assert-TemplateEqual ($repositorySettings | ConvertFrom-Json) $actualRepository 'repository'
 
     $actualEnvironment = gh api "repos/$Repository/environments/release" | ConvertFrom-Json
     $actualEnvironmentInput = ConvertTo-EnvironmentPolicyInput -Environment $actualEnvironment
