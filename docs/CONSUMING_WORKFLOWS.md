@@ -6,7 +6,7 @@ commit SHA; Renovate updates that SHA after the consumer's own CI passes.
 ```yaml
 jobs:
   dotnet:
-    uses: Concertable/.github/.github/workflows/dotnet-ci.yml@<full-commit-sha>
+    uses: Concertable/pipeline/.github/workflows/dotnet-ci.yml@<full-commit-sha>
     with:
       solution: Concertable.Auth.slnx
     permissions:
