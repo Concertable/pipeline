@@ -1,22 +1,133 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Concertable organization dependency policy",
-  "extends": ["config:recommended", ":dependencyDashboard"],
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard"
+  ],
   "configMigration": true,
   "minimumReleaseAge": "3 days",
   "customManagers": [
     {
       "customType": "regex",
+      "description": "Shared .NET platform train pin",
+      "managerFilePatterns": [
+        "/(^|/)Directory\\.Packages\\.props$/"
+      ],
+      "matchStrings": [
+        "<ConcertableDotNetPlatformVersion>(?<currentValue>[^<]+)</ConcertableDotNetPlatformVersion>"
+      ],
+      "depNameTemplate": "Concertable.Kernel",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "Auth train pin",
+      "managerFilePatterns": [
+        "/(^|/)Directory\\.Packages\\.props$/"
+      ],
+      "matchStrings": [
+        "<ConcertableAuthVersion>(?<currentValue>[^<]+)</ConcertableAuthVersion>"
+      ],
+      "depNameTemplate": "Concertable.Auth.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "B2B contracts train pin",
+      "managerFilePatterns": [
+        "/(^|/)Directory\\.Packages\\.props$/"
+      ],
+      "matchStrings": [
+        "<ConcertableB2BContractsVersion>(?<currentValue>[^<]+)</ConcertableB2BContractsVersion>"
+      ],
+      "depNameTemplate": "Concertable.B2B.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "Customer train pin",
+      "managerFilePatterns": [
+        "/(^|/)Directory\\.Packages\\.props$/"
+      ],
+      "matchStrings": [
+        "<ConcertableCustomerVersion>(?<currentValue>[^<]+)</ConcertableCustomerVersion>"
+      ],
+      "depNameTemplate": "Concertable.Customer.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "Payment train pin",
+      "managerFilePatterns": [
+        "/(^|/)Directory\\.Packages\\.props$/"
+      ],
+      "matchStrings": [
+        "<ConcertablePaymentVersion>(?<currentValue>[^<]+)</ConcertablePaymentVersion>"
+      ],
+      "depNameTemplate": "Concertable.Payment.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "Search train pin",
+      "managerFilePatterns": [
+        "/(^|/)Directory\\.Packages\\.props$/"
+      ],
+      "matchStrings": [
+        "<ConcertableSearchVersion>(?<currentValue>[^<]+)</ConcertableSearchVersion>"
+      ],
+      "depNameTemplate": "Concertable.Search.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "System testing train pin",
+      "managerFilePatterns": [
+        "/(^|/)Directory\\.Packages\\.props$/"
+      ],
+      "matchStrings": [
+        "<ConcertableSystemVersion>(?<currentValue>[^<]+)</ConcertableSystemVersion>"
+      ],
+      "depNameTemplate": "Concertable.E2E",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
       "description": "Packages in system compatibility manifests",
-      "managerFilePatterns": ["/(^|/)compatibility[-/].*\\.json$/", "/(^|/)compatibility-manifest\\.json$/"],
-      "matchStrings": ["\"(?<datasource>nuget|npm):(?<depName>(?:@[^/\"@]+/)?[^\"@]+)@(?<currentValue>[^\"@]+)\""],
+      "managerFilePatterns": [
+        "/(^|/)compatibility[-/].*\\.(json|ya?ml)$/",
+        "/(^|/)compatibility-manifest\\.(json|ya?ml)$/"
+      ],
+      "matchStrings": [
+        "\"(?<datasource>nuget|npm):(?<depName>(?:@[^/\"@]+/)?[^\"@]+)@(?<currentValue>[^\"@]+)\""
+      ],
       "versioningTemplate": "{{#if (equals datasource 'nuget')}}nuget{{else}}npm{{/if}}"
     },
     {
       "customType": "regex",
       "description": "Images in compatibility and environment manifests",
-      "managerFilePatterns": ["/(^|/)(compatibility|environments?)[-/].*\\.json$/", "/(^|/)(compatibility|environment)-manifest\\.json$/"],
-      "matchStrings": ["\"(?<depName>ghcr\\.io/concertable/[^\":]+):(?<currentValue>[^\"@]+)@(?<currentDigest>sha256:[0-9a-f]{64})\""],
+      "managerFilePatterns": [
+        "/(^|/)(compatibility|environments?)[-/].*\\.(json|ya?ml)$/",
+        "/(^|/)(compatibility|environment)-manifest\\.(json|ya?ml)$/"
+      ],
+      "matchStrings": [
+        "\"(?<depName>ghcr\\.io/concertable/[^\":]+):(?<currentValue>[^\"@]+)@(?<currentDigest>sha256:[0-9a-f]{64})\""
+      ],
       "datasourceTemplate": "docker",
       "versioningTemplate": "docker"
     }
@@ -24,55 +135,91 @@
   "packageRules": [
     {
       "description": "Keep GitHub Actions immutable",
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "pinDigests": true,
       "groupName": "github actions"
     },
     {
       "description": "Auth producer train",
-      "matchDatasources": ["nuget"],
-      "matchPackageNames": ["/^Concertable\\.Auth(?:\\.|$)/"],
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "/^Concertable\\.Auth(?:\\.|$)/"
+      ],
       "groupName": "auth train"
     },
     {
       "description": "B2B producer train",
-      "matchDatasources": ["nuget", "npm"],
-      "matchPackageNames": ["/^Concertable\\.B2B(?:\\.|$)/", "/^@concertable\\/b2b(?:-|$)/"],
+      "matchDatasources": [
+        "nuget",
+        "npm"
+      ],
+      "matchPackageNames": [
+        "/^Concertable\\.B2B(?:\\.|$)/",
+        "/^@concertable\\/b2b(?:-|$)/"
+      ],
       "groupName": "b2b train"
     },
     {
       "description": "Customer producer train",
-      "matchDatasources": ["nuget", "npm"],
-      "matchPackageNames": ["/^Concertable\\.Customer(?:\\.|$)/", "/^@concertable\\/customer(?:-|$)/"],
+      "matchDatasources": [
+        "nuget",
+        "npm"
+      ],
+      "matchPackageNames": [
+        "/^Concertable\\.Customer(?:\\.|$)/",
+        "/^@concertable\\/customer(?:-|$)/"
+      ],
       "groupName": "customer train"
     },
     {
       "description": "Payment producer train",
-      "matchDatasources": ["nuget"],
-      "matchPackageNames": ["/^Concertable\\.Payment(?:\\.|$)/"],
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "/^Concertable\\.Payment(?:\\.|$)/"
+      ],
       "groupName": "payment train"
     },
     {
       "description": "Search producer train",
-      "matchDatasources": ["nuget"],
-      "matchPackageNames": ["/^Concertable\\.Search(?:\\.|$)/"],
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "/^Concertable\\.Search(?:\\.|$)/"
+      ],
       "groupName": "search train"
     },
     {
       "description": "Shared dotnet platform train",
-      "matchDatasources": ["nuget"],
-      "matchPackageNames": ["/^Concertable\\.(AppHost|Build|Contracts|DataAccess|Kernel|Messaging|ServiceDefaults)(?:\\.|$)/"],
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "/^Concertable\\.(AppHost|Build|Contracts|DataAccess|Kernel|Messaging|ServiceDefaults)(?:\\.|$)/"
+      ],
       "groupName": "platform dotnet train"
     },
     {
       "description": "Shared web platform train",
-      "matchDatasources": ["npm"],
-      "matchPackageNames": ["/^@concertable\\/(shared|web-shared)$/"],
+      "matchDatasources": [
+        "npm"
+      ],
+      "matchPackageNames": [
+        "/^@concertable\\/(shared|web-shared)$/"
+      ],
       "groupName": "platform web train"
     },
     {
       "description": "Never automerge breaking dependency updates",
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false,
       "dependencyDashboardApproval": true
     }

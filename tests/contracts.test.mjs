@@ -78,19 +78,57 @@ test('settings verification handles reviewer shapes and paginated teams', () => 
   assert.equal(result.status, 0, result.stderr || result.stdout)
 })
 
+// Selected by what each manager targets rather than by its index: the previous version read
+// customManagers[0] and [1] positionally, so adding a manager ahead of them silently repointed
+// every assertion at the wrong one.
+const renovateConfig = () => JSON.parse(readFileSync(new URL('../renovate-config.json', import.meta.url), 'utf8'))
+const managersFor = (config, fragment) =>
+  config.customManagers.filter(({managerFilePatterns}) => managerFilePatterns.some((pattern) => pattern.includes(fragment)))
+
 test('Renovate sees package versions and image digests in both manifest owners', () => {
-  const config = JSON.parse(readFileSync(new URL('../renovate-config.json', import.meta.url), 'utf8'))
+  const config = renovateConfig()
   const compatibility = readFileSync(new URL('../fixtures/compatibility-manifest.json', import.meta.url), 'utf8')
   const environment = readFileSync(new URL('../fixtures/environment-manifest.json', import.meta.url), 'utf8')
-  assert.equal(config.customManagers.length, 2)
-  assert.ok(config.customManagers.every(({managerFilePatterns}) => managerFilePatterns.some((pattern) => pattern.includes('manifest'))))
-  const packageMatches = [...compatibility.matchAll(new RegExp(config.customManagers[0].matchStrings[0], 'g'))]
+  const [packages, images] = managersFor(config, 'manifest')
+  assert.equal(managersFor(config, 'manifest').length, 2)
+  const packageMatches = [...compatibility.matchAll(new RegExp(packages.matchStrings[0], 'g'))]
   assert.deepEqual(packageMatches.map(({groups}) => [groups.datasource, groups.depName, groups.currentValue]), [
     ['nuget', 'Concertable.Auth.Contracts', '1.2.3'],
     ['npm', '@concertable/shared', '1.2.3'],
   ])
-  assert.match(compatibility, new RegExp(config.customManagers[1].matchStrings[0]))
-  assert.match(environment, new RegExp(config.customManagers[1].matchStrings[0]))
+  assert.match(compatibility, new RegExp(images.matchStrings[0]))
+  assert.match(environment, new RegExp(images.matchStrings[0]))
+})
+
+test('Renovate reads every release-train pin a consumer declares', () => {
+  const config = renovateConfig()
+  const trains = managersFor(config, 'Directory')
+  const declared = trains.map(({matchStrings}) => matchStrings[0].match(/<(Concertable\w+Version)>/)[1])
+  assert.deepEqual(declared, [
+    'ConcertableDotNetPlatformVersion',
+    'ConcertableAuthVersion',
+    'ConcertableB2BContractsVersion',
+    'ConcertableCustomerVersion',
+    'ConcertablePaymentVersion',
+    'ConcertableSearchVersion',
+    'ConcertableSystemVersion',
+  ])
+  // A train whose package does not resolve is a manager that reports no update and says nothing.
+  assert.ok(trains.every(({depNameTemplate, datasourceTemplate, registryUrlTemplate}) =>
+    depNameTemplate.startsWith('Concertable.') && datasourceTemplate === 'nuget' && registryUrlTemplate.includes('nuget.pkg.github.com')))
+  const props = declared.map((property) => `    <${property}>0.2.0-alpha.0.1</${property}>`).join('\n')
+  for (const {matchStrings} of trains) {
+    assert.match(props, new RegExp(matchStrings[0]))
+  }
+})
+
+test('the manifest managers reach a YAML manifest owner', () => {
+  const config = renovateConfig()
+  for (const {managerFilePatterns} of managersFor(config, 'manifest')) {
+    const patterns = managerFilePatterns.map((pattern) => new RegExp(pattern.slice(1, -1)))
+    assert.ok(patterns.some((pattern) => pattern.test('compatibility/local.yaml')),
+      'system/compatibility/local.yaml is the only manifest in the estate and it is YAML')
+  }
 })
 
 test('publication authority is isolated from caller build code', () => {
