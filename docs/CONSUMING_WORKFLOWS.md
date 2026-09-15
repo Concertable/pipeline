@@ -43,5 +43,11 @@ declared owner team, create the release environment, and replace the main rulese
 and repository IDs. The script strips derived team slugs from create requests and verifies the returned
 policy-bearing fields. Valid owner slugs are declared in `repository-settings/teams.json`. Templates contain no secret values.
 
+The main ruleset requires no approving review, deliberately. GitHub forbids a pull request's author from
+approving it, so in a single-maintainer organization an approval count of 1 is unsatisfiable: every merge
+becomes an admin bypass, and a bypassed merge skips the merge queue and its required checks entirely.
+Gating here is `ci-complete` plus the queue, which actually run. Restore the approval count when a second
+maintainer exists, not before.
+
 The accepted manifest shapes are documented in [MANIFEST_CONTRACTS.md](MANIFEST_CONTRACTS.md). They deliberately
 record dependency names and immutable digests/versions in a Renovate-readable form.
