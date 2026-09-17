@@ -6,7 +6,7 @@ on:
       project: {description: Project or solution to pack, required: true, type: string}
       dotnet-version: {required: false, default: 10.0.x, type: string}
       configuration: {required: false, default: Release, type: string}
-      publish: {description: Publish from a dispatched or released protected ref, or from a push when the caller opts in, required: false, default: false, type: boolean}
+      publish: {description: Publish from a dispatched or released protected ref - or from a push where the caller opts in, required: false, default: false, type: boolean}
       publish-on-push: {description: Also publish when the trigger is a push to a protected ref. A caller whose train is versioned per commit sets this so a merge publishes without a second manual step, required: false, default: false, type: boolean}
     secrets:
       PACKAGES_READ_TOKEN:
