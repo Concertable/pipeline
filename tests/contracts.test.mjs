@@ -139,3 +139,14 @@ test('publication authority is isolated from caller build code', () => {
     assert.match(workflow, /inputs\.publish && github\.ref_protected/)
   }
 })
+
+test('a push can only publish where the caller opted in, and only from a protected ref', () => {
+  const workflow = readFileSync(new URL('nuget-publish.yml', workflowsDirectory), 'utf8')
+  assert.match(workflow, /publish-on-push: \{description: [^}]*required: false, default: false, type: boolean\}/)
+  assert.match(workflow, /inputs\.publish-on-push && github\.event_name == 'push'/)
+  for (const name of ['npm-publish.yml', 'container-publish.yml']) {
+    const other = readFileSync(new URL(name, workflowsDirectory), 'utf8')
+    assert.doesNotMatch(other, /event_name == 'push'/,
+      `${name} has no opt-in, so a push must not reach its publish job`)
+  }
+})
