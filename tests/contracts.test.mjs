@@ -140,6 +140,22 @@ test('publication authority is isolated from caller build code', () => {
   }
 })
 
+test('no flow-mapping declaration hides a stray key behind a comma', () => {
+  // `{description: a, b, required: false}` is legal YAML - `b` parses as a null-valued key - so a comma
+  // inside a description silently becomes an input option, and only GitHub's schema check rejects it.
+  for (const name of reusableNames) {
+    const workflow = readFileSync(new URL(name, workflowsDirectory), 'utf8')
+    for (const [lineNumber, line] of workflow.split('\n').entries()) {
+      const flow = line.match(/^\s+[\w-]+: \{(.+)\}$/)
+      if (!flow) continue
+      for (const entry of flow[1].split(', ')) {
+        assert.match(entry, /:/,
+          `${name}:${lineNumber + 1} declares '${entry.trim()}' as its own key - a comma inside a flow mapping starts a new entry`)
+      }
+    }
+  }
+})
+
 test('a push can only publish where the caller opted in, and only from a protected ref', () => {
   const workflow = readFileSync(new URL('nuget-publish.yml', workflowsDirectory), 'utf8')
   assert.match(workflow, /publish-on-push: \{description: [^}]*required: false, default: false, type: boolean\}/)
