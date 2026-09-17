@@ -6,7 +6,8 @@ on:
       project: {description: Project or solution to pack, required: true, type: string}
       dotnet-version: {required: false, default: 10.0.x, type: string}
       configuration: {required: false, default: Release, type: string}
-      publish: {description: Publish from an explicitly dispatched protected release ref, required: false, default: false, type: boolean}
+      publish: {description: Publish from a dispatched or released protected ref, or from a push when the caller opts in, required: false, default: false, type: boolean}
+      publish-on-push: {description: Also publish when the trigger is a push to a protected ref. A caller whose train is versioned per commit sets this so a merge publishes without a second manual step, required: false, default: false, type: boolean}
     secrets:
       PACKAGES_READ_TOKEN:
         description: >-
@@ -83,7 +84,11 @@ jobs:
   publish:
     name: Attest and publish
     needs: verify
-    if: ${{ inputs.publish && github.ref_protected && (github.event_name == 'workflow_dispatch' || github.event_name == 'release') }}
+    if: >-
+      ${{ inputs.publish && github.ref_protected
+          && (github.event_name == 'workflow_dispatch'
+              || github.event_name == 'release'
+              || (inputs.publish-on-push && github.event_name == 'push')) }}
     runs-on: ubuntu-latest
     environment: release
     permissions: {contents: read, packages: write, id-token: write, attestations: write}

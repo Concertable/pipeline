@@ -27,7 +27,11 @@ Available contracts:
 - `node-ci.yml`: clean npm install followed by selected lint, typecheck, test, and build scripts.
 - `nuget-publish.yml`: pack, attest, optionally publish, and retain NuGet packages. A caller whose
   package ids are still bound to a different repository passes `secrets: {PACKAGES_TOKEN: ...}`,
-  because `GITHUB_TOKEN` only authorises packages bound to the calling repository.
+  because `GITHUB_TOKEN` only authorises packages bound to the calling repository. Publication runs
+  from a dispatch or a release; a caller whose version advances per commit adds
+  `publish-on-push: true` so a merge to its protected default branch publishes without a second
+  manual step. The protected-ref requirement and the `release` environment still apply, so the
+  opt-in widens the trigger and not the authority.
 - `npm-publish.yml`: install/test, pack, clean-consumer install, attest, and optionally publish one npm package.
 - `container-publish.yml`: BuildKit build, critical-vulnerability scan, SBOM/provenance, keyless signing, and optional GHCR push.
 - `apphost-smoke.yml`: restore/build an AppHost and require a health endpoint before timeout.
