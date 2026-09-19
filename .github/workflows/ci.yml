@@ -20,10 +20,22 @@ jobs:
           node-version: 22
       - run: node --test tests/*.test.mjs
 
+  renovate-preset:
+    name: Validate the Renovate preset
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+      # An option this preset names but Renovate does not is silently ignored, and the estate's pins
+      # stop moving with nothing red anywhere.
+      - run: npx --yes --package renovate@44 renovate-config-validator renovate-config.json
+
   ci-complete:
     name: ci-complete
     if: ${{ always() }}
-    needs: [validate]
+    needs: [validate, renovate-preset]
     runs-on: ubuntu-latest
     permissions: {}
     steps:
