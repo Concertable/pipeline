@@ -185,6 +185,23 @@ test('each producer train carries its own image', () => {
   }
 })
 
+test('this repository does not treat its own fixtures as dependencies', () => {
+  const config = renovateConfig()
+  const fixtures = readdirSync(new URL('../fixtures/', import.meta.url)).map((name) => `fixtures/${name}`)
+  assert.ok(fixtures.length > 0)
+  // The manifest managers match on filename, and these samples are named after the shapes they
+  // sample - so without this rule Renovate raises them to real versions and the assertions above,
+  // which pin their exact values, go permanently red.
+  const excluded = config.packageRules.find(({enabled, matchFileNames}) =>
+    enabled === false && matchFileNames?.includes('**/fixtures/**'))
+  assert.ok(excluded, 'no packageRule disables **/fixtures/**')
+  for (const fixture of fixtures) {
+    assert.ok(config.customManagers.some(({managerFilePatterns}) =>
+      managerFilePatterns.some((pattern) => new RegExp(pattern.slice(1, -1)).test(fixture))),
+      `${fixture} matches no manager, so this guard is testing nothing`)
+  }
+})
+
 test('a first-party train waits on nothing but its own green CI', () => {
   const firstParty = renovateConfig().packageRules
     .filter(({matchPackageNames}) => matchPackageNames?.includes('/^Concertable\\./'))

@@ -218,6 +218,13 @@
   ],
   "packageRules": [
     {
+      "description": "A test fixture is a sample of a shape, not a dependency of anything",
+      "matchFileNames": [
+        "**/fixtures/**"
+      ],
+      "enabled": false
+    },
+    {
       "description": "Keep GitHub Actions immutable",
       "matchManagers": [
         "github-actions"
