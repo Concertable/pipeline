@@ -61,6 +61,15 @@ test('required CI handles merge queues and emits the ruleset context', () => {
   assert.match(workflow, /^\s{4}name: ci-complete$/m)
 })
 
+test('the aggregation gate survives a second required job', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8')
+  const required = workflow.match(/^\s+needs: \[(.+)\]$/m)[1].split(',')
+  assert.ok(required.length > 1)
+  // join(needs.*.result) is "success,success" once a second job exists, so comparing it to the bare
+  // literal fails a wholly green run - and fails it in the one check the ruleset requires.
+  assert.doesNotMatch(workflow, /"\$RESULTS" = "success"/)
+})
+
 test('the complete durable owner-team roster is declared', () => {
   const teams = JSON.parse(readFileSync(new URL('../repository-settings/teams.json', import.meta.url), 'utf8'))
   assert.deepEqual(teams.map(({slug}) => slug).sort(), [

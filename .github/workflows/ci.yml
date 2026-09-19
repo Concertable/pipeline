@@ -42,4 +42,7 @@ jobs:
       - name: Require every validation job to pass
         env:
           RESULTS: ${{ join(needs.*.result, ',') }}
-        run: test "$RESULTS" = "success"
+        run: |
+          for result in ${RESULTS//,/ }; do
+            test "$result" = "success"
+          done
