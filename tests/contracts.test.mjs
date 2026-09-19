@@ -61,6 +61,15 @@ test('required CI handles merge queues and emits the ruleset context', () => {
   assert.match(workflow, /^\s{4}name: ci-complete$/m)
 })
 
+test('the aggregation gate survives a second required job', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8')
+  const required = workflow.match(/^\s+needs: \[(.+)\]$/m)[1].split(',')
+  assert.ok(required.length > 1)
+  // join(needs.*.result) is "success,success" once a second job exists, so comparing it to the bare
+  // literal fails a wholly green run - and fails it in the one check the ruleset requires.
+  assert.doesNotMatch(workflow, /"\$RESULTS" = "success"/)
+})
+
 test('the complete durable owner-team roster is declared', () => {
   const teams = JSON.parse(readFileSync(new URL('../repository-settings/teams.json', import.meta.url), 'utf8'))
   assert.deepEqual(teams.map(({slug}) => slug).sort(), [
@@ -129,6 +138,81 @@ test('the manifest managers reach a YAML manifest owner', () => {
     assert.ok(patterns.some((pattern) => pattern.test('compatibility/local.yaml')),
       'system/compatibility/local.yaml is the only manifest in the estate and it is YAML')
   }
+})
+
+// Reaching the file is not reading it: these managers required a JSON-quoted canonical string, so
+// against the one manifest the estate actually commits they matched nothing and reported nothing.
+const qualifiedManifest = () => readFileSync(new URL('../fixtures/compatibility-local.yaml', import.meta.url), 'utf8')
+
+test('every image in the YAML manifest owner extracts with its tag and digest', () => {
+  const [, images] = managersFor(renovateConfig(), 'manifest')
+  const matches = [...qualifiedManifest().matchAll(new RegExp(images.matchStrings[0], 'g'))]
+  assert.deepEqual(matches.map(({groups}) => [groups.depName, groups.currentValue]), [
+    ['ghcr.io/concertable/auth', '0.2.0-alpha.0.297'],
+    ['ghcr.io/concertable/b2b-web', '0.2.0-alpha.0.292'],
+    ['ghcr.io/concertable/payment-workers', '0.2.0-alpha.0.372'],
+  ])
+  assert.ok(matches.every(({groups}) => /^sha256:[0-9a-f]{64}$/.test(groups.currentDigest)))
+})
+
+test('the qualified trains extract under the same dependency name as the restored pin', () => {
+  const config = renovateConfig()
+  const manifest = qualifiedManifest()
+  const qualified = managersFor(config, 'compatibility/local')
+  assert.deepEqual(
+    qualified.map(({depNameTemplate, matchStrings}) =>
+      [depNameTemplate, manifest.match(new RegExp(matchStrings[0]))?.groups.currentValue]), [
+      ['Concertable.Kernel', '0.2.0-alpha.0.5'],
+      ['Concertable.Auth.Hosting', '0.2.0-alpha.0.297'],
+      ['Concertable.B2B.Hosting', '0.2.0-alpha.0.292'],
+      ['Concertable.Customer.Hosting', '0.2.0-alpha.0.338'],
+      ['Concertable.Payment.Hosting', '0.2.0-alpha.0.372'],
+      ['Concertable.Search.Hosting', '0.2.0-alpha.0.324'],
+    ])
+  // system's ReleaseTrainPinTests holds Directory.Packages.props equal to this manifest, so a bump
+  // reaching one file and not the other lands red. One dependency name puts both in one branch.
+  const restored = new Set(managersFor(config, 'Directory').map(({depNameTemplate}) => depNameTemplate))
+  assert.ok(qualified.every(({depNameTemplate}) => restored.has(depNameTemplate)))
+})
+
+test('each producer train carries its own image', () => {
+  const {packageRules} = renovateConfig()
+  for (const train of ['auth', 'b2b', 'customer', 'payment', 'search']) {
+    const {matchDatasources, matchPackageNames} = packageRules.find(({groupName}) => groupName === `${train} train`)
+    assert.ok(matchDatasources.includes('docker'), `${train} train excludes the datasource its image comes from`)
+    const image = matchPackageNames.find((name) => name.includes('ghcr'))
+    assert.match(`ghcr.io/concertable/${train}`, new RegExp(image.slice(1, -1)))
+  }
+})
+
+test('this repository does not treat its own fixtures as dependencies', () => {
+  const config = renovateConfig()
+  const fixtures = readdirSync(new URL('../fixtures/', import.meta.url)).map((name) => `fixtures/${name}`)
+  assert.ok(fixtures.length > 0)
+  // The manifest managers match on filename, and these samples are named after the shapes they
+  // sample - so without this rule Renovate raises them to real versions and the assertions above,
+  // which pin their exact values, go permanently red.
+  const excluded = config.packageRules.find(({enabled, matchFileNames}) =>
+    enabled === false && matchFileNames?.includes('**/fixtures/**'))
+  assert.ok(excluded, 'no packageRule disables **/fixtures/**')
+  for (const fixture of fixtures) {
+    assert.ok(config.customManagers.some(({managerFilePatterns}) =>
+      managerFilePatterns.some((pattern) => new RegExp(pattern.slice(1, -1)).test(fixture))),
+      `${fixture} matches no manager, so this guard is testing nothing`)
+  }
+})
+
+test('a first-party train waits on nothing but its own green CI', () => {
+  const firstParty = renovateConfig().packageRules
+    .filter(({matchPackageNames}) => matchPackageNames?.includes('/^Concertable\\./'))
+  const [age, merge] = firstParty
+  assert.equal(firstParty.length, 2)
+  // minimumReleaseAge is third-party supply-chain latency. Applied to a train that publishes per
+  // commit it only delays the estate against itself.
+  assert.equal(age.minimumReleaseAge, null)
+  assert.equal(merge.automerge, true)
+  assert.equal(merge.platformAutomerge, true)
+  assert.ok(!merge.matchUpdateTypes.includes('major'))
 })
 
 test('publication authority is isolated from caller build code', () => {

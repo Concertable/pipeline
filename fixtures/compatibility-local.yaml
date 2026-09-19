@@ -1,0 +1,23 @@
+version: 1
+
+source:
+  repository: Concertable/concertable
+  commit: d6f986c2570d994891767bcb1a10fd797d2b854e
+
+platform:
+  packages: 0.2.0-alpha.0.5
+
+services:
+  auth: 0.2.0-alpha.0.297
+  b2b: 0.2.0-alpha.0.292
+  customer: 0.2.0-alpha.0.338
+  payment: 0.2.0-alpha.0.372
+  search: 0.2.0-alpha.0.324
+
+images:
+  auth:
+    reference: ghcr.io/concertable/auth:0.2.0-alpha.0.297@sha256:d888cb59d806241611eb36a5d1eeb293d472cd94e4a89bf6dab6b9b23c0c5f82
+  b2b-web:
+    reference: ghcr.io/concertable/b2b-web:0.2.0-alpha.0.292@sha256:4e03fe2cb9db931c9d318c38fde4e8ad921a5523e43a185f5dcea9807f51c1d9
+  payment-workers:
+    reference: ghcr.io/concertable/payment-workers:0.2.0-alpha.0.372@sha256:09b1d4d0f9bf175f61dcaafde0d06b7eb7f8a710e0e775d4b385957b9e865cfc
