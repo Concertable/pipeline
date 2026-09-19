@@ -114,7 +114,7 @@
         "/(^|/)compatibility-manifest\\.(json|ya?ml)$/"
       ],
       "matchStrings": [
-        "\"(?<datasource>nuget|npm):(?<depName>(?:@[^/\"@]+/)?[^\"@]+)@(?<currentValue>[^\"@]+)\""
+        "(?<datasource>nuget|npm):(?<depName>(?:@[^/\\s\"@]+/)?[^\\s\"@]+)@(?<currentValue>[^\\s\"@,\\]]+)"
       ],
       "versioningTemplate": "{{#if (equals datasource 'nuget')}}nuget{{else}}npm{{/if}}"
     },
@@ -126,13 +126,104 @@
         "/(^|/)(compatibility|environment)-manifest\\.(json|ya?ml)$/"
       ],
       "matchStrings": [
-        "\"(?<depName>ghcr\\.io/concertable/[^\":]+):(?<currentValue>[^\"@]+)@(?<currentDigest>sha256:[0-9a-f]{64})\""
+        "(?<depName>ghcr\\.io/concertable/[^\\s\":]+):(?<currentValue>[^\\s\"@]+)@(?<currentDigest>sha256:[0-9a-f]{64})"
       ],
       "datasourceTemplate": "docker",
-      "versioningTemplate": "docker"
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "Platform train in the system compatibility manifest",
+      "managerFilePatterns": [
+        "/(^|/)compatibility/local\\.yaml$/"
+      ],
+      "matchStrings": [
+        "\\nplatform:\\n  packages: (?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "Concertable.Kernel",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "Auth train in the system compatibility manifest",
+      "managerFilePatterns": [
+        "/(^|/)compatibility/local\\.yaml$/"
+      ],
+      "matchStrings": [
+        "\\n  auth: (?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "Concertable.Auth.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "B2B train in the system compatibility manifest",
+      "managerFilePatterns": [
+        "/(^|/)compatibility/local\\.yaml$/"
+      ],
+      "matchStrings": [
+        "\\n  b2b: (?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "Concertable.B2B.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "Customer train in the system compatibility manifest",
+      "managerFilePatterns": [
+        "/(^|/)compatibility/local\\.yaml$/"
+      ],
+      "matchStrings": [
+        "\\n  customer: (?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "Concertable.Customer.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "Payment train in the system compatibility manifest",
+      "managerFilePatterns": [
+        "/(^|/)compatibility/local\\.yaml$/"
+      ],
+      "matchStrings": [
+        "\\n  payment: (?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "Concertable.Payment.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "description": "Search train in the system compatibility manifest",
+      "managerFilePatterns": [
+        "/(^|/)compatibility/local\\.yaml$/"
+      ],
+      "matchStrings": [
+        "\\n  search: (?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "Concertable.Search.Hosting",
+      "datasourceTemplate": "nuget",
+      "registryUrlTemplate": "https://nuget.pkg.github.com/Concertable/index.json",
+      "versioningTemplate": "nuget"
     }
   ],
   "packageRules": [
+    {
+      "description": "A test fixture is a sample of a shape, not a dependency of anything",
+      "matchFileNames": [
+        "**/fixtures/**"
+      ],
+      "enabled": false
+    },
     {
       "description": "Keep GitHub Actions immutable",
       "matchManagers": [
@@ -144,10 +235,12 @@
     {
       "description": "Auth producer train",
       "matchDatasources": [
-        "nuget"
+        "nuget",
+        "docker"
       ],
       "matchPackageNames": [
-        "/^Concertable\\.Auth(?:\\.|$)/"
+        "/^Concertable\\.Auth(?:\\.|$)/",
+        "/^ghcr\\.io\\/concertable\\/auth(?:-|$)/"
       ],
       "groupName": "auth train"
     },
@@ -155,11 +248,13 @@
       "description": "B2B producer train",
       "matchDatasources": [
         "nuget",
-        "npm"
+        "npm",
+        "docker"
       ],
       "matchPackageNames": [
         "/^Concertable\\.B2B(?:\\.|$)/",
-        "/^@concertable\\/b2b(?:-|$)/"
+        "/^@concertable\\/b2b(?:-|$)/",
+        "/^ghcr\\.io\\/concertable\\/b2b(?:-|$)/"
       ],
       "groupName": "b2b train"
     },
@@ -167,31 +262,37 @@
       "description": "Customer producer train",
       "matchDatasources": [
         "nuget",
-        "npm"
+        "npm",
+        "docker"
       ],
       "matchPackageNames": [
         "/^Concertable\\.Customer(?:\\.|$)/",
-        "/^@concertable\\/customer(?:-|$)/"
+        "/^@concertable\\/customer(?:-|$)/",
+        "/^ghcr\\.io\\/concertable\\/customer(?:-|$)/"
       ],
       "groupName": "customer train"
     },
     {
       "description": "Payment producer train",
       "matchDatasources": [
-        "nuget"
+        "nuget",
+        "docker"
       ],
       "matchPackageNames": [
-        "/^Concertable\\.Payment(?:\\.|$)/"
+        "/^Concertable\\.Payment(?:\\.|$)/",
+        "/^ghcr\\.io\\/concertable\\/payment(?:-|$)/"
       ],
       "groupName": "payment train"
     },
     {
       "description": "Search producer train",
       "matchDatasources": [
-        "nuget"
+        "nuget",
+        "docker"
       ],
       "matchPackageNames": [
-        "/^Concertable\\.Search(?:\\.|$)/"
+        "/^Concertable\\.Search(?:\\.|$)/",
+        "/^ghcr\\.io\\/concertable\\/search(?:-|$)/"
       ],
       "groupName": "search train"
     },
@@ -222,6 +323,42 @@
       ],
       "automerge": false,
       "dependencyDashboardApproval": true
+    },
+    {
+      "description": "First-party trains publish per commit, so release-age latency only delays the estate against itself",
+      "matchDatasources": [
+        "nuget",
+        "npm",
+        "docker"
+      ],
+      "matchPackageNames": [
+        "/^Concertable\\./",
+        "/^@concertable\\//",
+        "/^ghcr\\.io\\/concertable\\//"
+      ],
+      "minimumReleaseAge": null
+    },
+    {
+      "description": "A non-breaking first-party bump merges on its own green CI",
+      "matchDatasources": [
+        "nuget",
+        "npm",
+        "docker"
+      ],
+      "matchPackageNames": [
+        "/^Concertable\\./",
+        "/^@concertable\\//",
+        "/^ghcr\\.io\\/concertable\\//"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
     }
   ]
 }

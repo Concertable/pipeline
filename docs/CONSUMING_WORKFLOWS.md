@@ -1,7 +1,9 @@
 # Consuming the organization workflows
 
 Consumer repositories call these workflows from thin repository-owned workflows. Pin every call to a full
-commit SHA; Renovate updates that SHA after the consumer's own CI passes.
+commit SHA. Nothing advances that pin for you: this repository publishes no release tag, so a bare SHA
+gives Renovate no version to move to. Raise it by hand, or see the debt entry in
+[TECH_DEBT.md](../TECH_DEBT.md).
 
 ```yaml
 jobs:
@@ -55,3 +57,22 @@ maintainer exists, not before.
 
 The accepted manifest shapes are documented in [MANIFEST_CONTRACTS.md](MANIFEST_CONTRACTS.md). They deliberately
 record dependency names and immutable digests/versions in a Renovate-readable form.
+
+## Dependency updates
+
+`renovate-config.json` is the organization preset and the only owner of the policy. A repository opts in
+with a `renovate.json` holding nothing but
+`{"extends": ["github>Concertable/pipeline:renovate-config.json"]}`; it never restates a rule locally.
+
+The preset reads three pin owners: every release-train property in `Directory.Packages.props`, the
+`platform` and `services` trains in `compatibility/local.yaml`, and the canonical
+`ghcr.io/concertable/<image>:<tag>@sha256:<digest>` references in that file and in a published manifest.
+Each producer's packages and its images share one group, so a train's package pin and its image digest
+move in one pull request — which is what keeps a consumer's two declarations of one version equal.
+
+A first-party update waives `minimumReleaseAge`, because that delay is third-party supply-chain latency
+and these trains publish per commit; it then automerges on its own green `ci-complete`. A major update
+never automerges and waits on the dependency dashboard.
+
+Renovate is a GitHub App. It updates nothing in a repository until the app is installed on the
+organization with access to that repository.
