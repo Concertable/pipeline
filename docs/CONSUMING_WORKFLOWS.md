@@ -75,4 +75,10 @@ and these trains publish per commit; it then automerges on its own green `ci-com
 never automerges and waits on the dependency dashboard.
 
 Renovate is a GitHub App. It updates nothing in a repository until the app is installed on the
-organization with access to that repository.
+organization with access to that repository, *and* the organization is onboarded on Mend's Developer
+Platform — installing the app alone leaves every job unrun with nothing to see from GitHub.
+
+Mend onboards an organization as `Scan Only`, which runs Renovate in `mode: silent`: it scans
+everything and opens nothing, which reads exactly like a bot that never started. The preset sets
+`mode: full` to override that default, so the platform setting does not silently decide whether any of
+this works.

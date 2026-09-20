@@ -202,6 +202,12 @@ test('this repository does not treat its own fixtures as dependencies', () => {
   }
 })
 
+test('the preset opts out of the platform default of silent', () => {
+  // Mend's onboarding defaults an organization to "Scan Only", which sets mode=silent: Renovate scans
+  // every repository and opens nothing. That is indistinguishable from a bot that never ran.
+  assert.equal(renovateConfig().mode, 'full')
+})
+
 test('a first-party train waits on nothing but its own green CI', () => {
   const firstParty = renovateConfig().packageRules
     .filter(({matchPackageNames}) => matchPackageNames?.includes('/^Concertable\\./'))
