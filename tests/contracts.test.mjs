@@ -208,6 +208,18 @@ test('the preset opts out of the platform default of silent', () => {
   assert.equal(renovateConfig().mode, 'full')
 })
 
+test('a family published in lockstep moves in one pull request', () => {
+  // Duende's EF package requires the exact matching core version, so splitting them across two PRs
+  // makes each unrestorable on its own: NU1605 "Detected package downgrade ... 7.4.12 to 7.4.7".
+  const rule = renovateConfig().packageRules.find(({groupName}) => groupName === 'duende identityserver')
+  assert.ok(rule, 'no group holds the Duende packages together')
+  const pattern = new RegExp(rule.matchPackageNames[0].slice(1, -1))
+  for (const id of ['Duende.IdentityServer', 'Duende.IdentityServer.EntityFramework']) {
+    assert.match(id, pattern)
+  }
+  assert.doesNotMatch('Duende.IdentityServerOther', pattern)
+})
+
 test('a first-party train waits on nothing but its own green CI', () => {
   const firstParty = renovateConfig().packageRules
     .filter(({matchPackageNames}) => matchPackageNames?.includes('/^Concertable\\./'))

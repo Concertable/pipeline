@@ -330,6 +330,16 @@
       "groupName": "platform web train"
     },
     {
+      "description": "Duende ships IdentityServer and its satellites in lockstep, and a satellite requires the exact matching core version",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "/^Duende\\.IdentityServer(?:\\.|$)/"
+      ],
+      "groupName": "duende identityserver"
+    },
+    {
       "description": "Never automerge breaking dependency updates",
       "matchUpdateTypes": [
         "major"
