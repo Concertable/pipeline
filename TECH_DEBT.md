@@ -67,16 +67,22 @@ the repositories that now publish them.
 This is the gap the whole auto-bump effort exists to close: the pins that were hand-edited across
 Payment, B2B, Search and System are exactly the ones still unreachable.
 
-Closing it needs a credential, which is an account-level action:
+**The stale binding is not the cause, and rebinding would not fix it.** `Concertable.Build` is bound to
+`platform-dotnet` — live, not archived, fully inside the installation — and fails to resolve exactly
+like the 59 bound to the monorepo. The blocker is the *token type*: GitHub Packages' NuGet registry
+does not accept a GitHub App installation token, which is all the platform token can ever be.
 
-- Mint a token with `read:packages` that can see the org's packages.
+Rebinding is also not the cheap change it looks like. Every repository already declares the correct
+`RepositoryUrl` for its own packages; the binding is sticky from first publish and does not follow that
+metadata. Moving it would mean deleting and republishing published packages, which is destructive and,
+per the evidence above, would change nothing.
+
+So a credential is the only route:
+
+- Mint a token with `read:packages` that can see the organization's packages.
 - Give it to Renovate as a `hostRules` entry for `nuget.pkg.github.com`, with the token encrypted at
   Mend's encryption endpoint so no secret enters this repository in plaintext — or set it in the Mend
   Developer Platform against the organization.
-
-Worth weighing at the same time: rebinding the 59 packages to their owning repositories would make the
-installation token's own `packages: read` sufficient and remove the credential entirely. That is the
-larger, more durable fix, and it also removes an archived repository from the publishing path.
 
 **Resolves when:** a Renovate run raises a `Concertable.*` pin in a consumer repository, and no
 dependency dashboard reports `no-result` for a first-party package.
