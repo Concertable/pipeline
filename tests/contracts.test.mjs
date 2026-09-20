@@ -211,14 +211,26 @@ test('the preset opts out of the platform default of silent', () => {
 test('a first-party train waits on nothing but its own green CI', () => {
   const firstParty = renovateConfig().packageRules
     .filter(({matchPackageNames}) => matchPackageNames?.includes('/^Concertable\\./'))
-  const [age, merge] = firstParty
-  assert.equal(firstParty.length, 2)
+  // Selected by the property each rule carries, not by position: they share a package pattern, so
+  // a third rule matching it silently repointed both of these at the wrong object.
+  const age = firstParty.find((rule) => 'minimumReleaseAge' in rule)
+  const merge = firstParty.find((rule) => rule.automerge !== undefined)
+  assert.ok(age && merge)
   // minimumReleaseAge is third-party supply-chain latency. Applied to a train that publishes per
   // commit it only delays the estate against itself.
   assert.equal(age.minimumReleaseAge, null)
   assert.equal(merge.automerge, true)
   assert.equal(merge.platformAutomerge, true)
   assert.ok(!merge.matchUpdateTypes.includes('major'))
+})
+
+test('a first-party package is only ever looked up on the organization feed', () => {
+  // Every consumer's nuget.config maps Concertable.* to the private feed as a dependency-confusion
+  // guard. Renovate does not read packageSourceMapping, so without this it queried nuget.org and
+  // reported `no-result` for all nineteen first-party packages.
+  const rule = renovateConfig().packageRules.find(({registryUrls}) => registryUrls)
+  assert.deepEqual(rule.registryUrls, ['https://nuget.pkg.github.com/Concertable/index.json'])
+  assert.deepEqual(rule.matchDatasources, ['nuget'])
 })
 
 test('publication authority is isolated from caller build code', () => {
