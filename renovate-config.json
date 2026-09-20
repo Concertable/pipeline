@@ -226,6 +226,18 @@
       "enabled": false
     },
     {
+      "description": "First-party packages exist only on the organization feed, as nuget.config packageSourceMapping already states",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "/^Concertable\\./"
+      ],
+      "registryUrls": [
+        "https://nuget.pkg.github.com/Concertable/index.json"
+      ]
+    },
+    {
       "description": "Keep GitHub Actions immutable",
       "matchManagers": [
         "github-actions"
