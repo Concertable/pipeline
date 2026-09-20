@@ -44,3 +44,39 @@ independently. `system`'s `TECH_DEBT.md` carries the test that has to exist befo
 **Resolves when:** `Directory.Packages.props`, workflow and npm pins are raised by Dependabot; the
 preset retains only the manifest managers; Renovate's installation is scoped to the repositories that
 still need it; and the two questions above are answered by an actual run rather than by documentation.
+
+### HIGH — Renovate cannot read the private feed, so no first-party pin is ever raised
+
+Third-party bumps work. Every `Concertable.*` lookup fails with `no-result`, in every repository, on
+runs made after the `registryUrls` rule landed. That rule was necessary but not sufficient: it fixed
+*which* feed is queried and nothing about being allowed to read it.
+
+Measured directly against the feed:
+
+| Request | Result |
+|---|---|
+| `GET nuget.pkg.github.com/Concertable/index.json`, no credential | **401** |
+| same, with a `read:packages` token | **200** |
+
+So `no-result` is a swallowed 401. Renovate auto-provisions a host rule for `*.pkg.github.com` from its
+own platform token, but the Mend app's platform token is a GitHub App installation token, and GitHub
+Packages' NuGet registry does not accept one — it wants a personal access token. Compounding it, 59 of
+the 62 first-party packages are still bound to the **archived** `concertable` monorepo rather than to
+the repositories that now publish them.
+
+This is the gap the whole auto-bump effort exists to close: the pins that were hand-edited across
+Payment, B2B, Search and System are exactly the ones still unreachable.
+
+Closing it needs a credential, which is an account-level action:
+
+- Mint a token with `read:packages` that can see the org's packages.
+- Give it to Renovate as a `hostRules` entry for `nuget.pkg.github.com`, with the token encrypted at
+  Mend's encryption endpoint so no secret enters this repository in plaintext — or set it in the Mend
+  Developer Platform against the organization.
+
+Worth weighing at the same time: rebinding the 59 packages to their owning repositories would make the
+installation token's own `packages: read` sufficient and remove the credential entirely. That is the
+larger, more durable fix, and it also removes an archived repository from the publishing path.
+
+**Resolves when:** a Renovate run raises a `Concertable.*` pin in a consumer repository, and no
+dependency dashboard reports `no-result` for a first-party package.
