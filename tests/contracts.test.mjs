@@ -243,7 +243,7 @@ test('every non-breaking update merges on its own green CI, third-party included
   const holds = rules.filter(({rule}) => rule.automerge === false)
   const label = ({groupName, matchIsBreaking, matchDatasources, matchUpdateTypes, description}) =>
     groupName ?? (matchIsBreaking ? 'breaking' : matchDatasources?.join() ?? matchUpdateTypes?.join() ?? description)
-  assert.deepEqual(holds.map(({rule}) => label(rule)).sort(), ['breaking', 'expo sdk', 'major', 'nuget,docker'])
+  assert.deepEqual(holds.map(({rule}) => label(rule)).sort(), ['breaking', 'major', 'nuget,docker'])
   assert.ok(holds.every(({rule}) => rule.dependencyDashboardApproval === true))
 })
 
@@ -295,25 +295,10 @@ test('a third-party NuGet or docker update below 1.0 waits like the npm ones', (
   }
 })
 
-test('a module the Expo SDK bundles moves only inside an SDK upgrade', () => {
-  const rules = indexedRules()
-  const merge = generalMerge(rules)
-  const expo = rules.find(({rule}) => rule.groupName === 'expo sdk')
-  assert.ok(merge && expo, 'no rule holds the Expo SDK modules back')
-  assert.ok(expo.index > merge.index, 'a later packageRule wins, so the Expo rule must follow the automerge rule')
-  assert.equal(expo.rule.automerge, false)
-  assert.equal(expo.rule.dependencyDashboardApproval, true)
-  const patterns = expo.rule.matchPackageNames.map((name) => name.startsWith('/') ? new RegExp(name.slice(1, -1)) : name)
-  const matches = (name) => patterns.some((pattern) => typeof pattern === 'string' ? pattern === name : pattern.test(name))
-  for (const name of ['expo', 'expo-image', '@expo/vector-icons', 'react', 'react-native', 'react-native-gesture-handler',
-    'react-native-reanimated', 'react-native-worklets', '@stripe/stripe-react-native', '@react-native/babel-preset',
-    'react-test-renderer', '@types/react']) {
-    assert.ok(matches(name), `${name} moves with the Expo SDK`)
-  }
-  for (const name of ['@expo-google-fonts/geist', 'react-native-toast-message', 'nativewind', 'expok',
-    '@react-native-firebase/app']) {
-    assert.ok(!matches(name), `${name} does not move with the Expo SDK`)
-  }
+test('Renovate leaves the mobile apps alone', () => {
+  const rule = renovateConfig().packageRules.find(({matchFileNames}) => matchFileNames?.includes('**/mobile/**'))
+  assert.ok(rule, 'no rule skips the mobile apps')
+  assert.equal(rule.enabled, false)
 })
 
 test('a first-party package is only ever looked up on the organization feed', () => {
