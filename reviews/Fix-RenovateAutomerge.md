@@ -4,9 +4,9 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `in-progress`
-**Reviewed up to commit:** `022bb95`  `(2026-10-06)`
-**Judgment:** `pending`
+**Review status:** `complete`
+**Reviewed up to commit:** `af2bdad4ba846c3aa7c6f48cba442bd9ddbaef67`  `(2026-10-06)`
+**Judgment:** `approved`
 
 ## Review pass — 2026-10-06 — native-general + api-contract + workflow
 
