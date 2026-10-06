@@ -392,7 +392,7 @@
       "dependencyDashboardApproval": true
     },
     {
-      "description": "Renovate gives NuGet and docker no breaking check, so a third-party update there below 1.0, which SemVer allows to break, waits like the npm ones. Reunion is the owner's own library and moves like a first-party train",
+      "description": "Renovate gives NuGet and docker no breaking check, so a third-party update there below 1.0, which SemVer allows to break, waits like the npm ones. Reunion is the owner's own library and is exempt",
       "matchDatasources": [
         "nuget",
         "docker"

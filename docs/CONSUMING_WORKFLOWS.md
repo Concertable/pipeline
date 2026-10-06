@@ -81,7 +81,7 @@ These wait on the dependency dashboard instead and never automerge:
   for npm, any update below 1.0 or from a prerelease. GitHub Actions are exempt because they share one
   group, and a group needs approval as soon as one of its updates does;
 - a third-party NuGet or docker minor or patch below 1.0, which those Renovate schemes cannot call breaking.
-  `Reunion`, the owner's own library, is exempt like a first-party train;
+  `Reunion`, the owner's own library, is exempt;
 - every `expo-*` and `@expo/*` package, every other module in the Expo SDK's `bundledNativeModules.json`,
   and their lockstep partners (`@react-native/*`, `react-test-renderer`, `@types/react`,
   `@types/react-dom`). The SDK fixes those versions,
