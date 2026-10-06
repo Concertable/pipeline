@@ -243,7 +243,7 @@ test('every non-breaking update merges on its own green CI, third-party included
   const holds = rules.filter(({rule}) => rule.automerge === false)
   const label = ({groupName, matchIsBreaking, matchDatasources, matchUpdateTypes, description}) =>
     groupName ?? (matchIsBreaking ? 'breaking' : matchDatasources?.join() ?? matchUpdateTypes?.join() ?? description)
-  assert.deepEqual(holds.map(({rule}) => label(rule)).sort(), ['breaking', 'expo sdk', 'major', 'nuget'])
+  assert.deepEqual(holds.map(({rule}) => label(rule)).sort(), ['breaking', 'expo sdk', 'major', 'nuget,docker'])
   assert.ok(holds.every(({rule}) => rule.dependencyDashboardApproval === true))
 })
 
@@ -272,15 +272,15 @@ test('a third-party non-major its versioning calls breaking waits like a major',
   }
 })
 
-test('a third-party NuGet update below 1.0 waits like the npm ones', () => {
+test('a third-party NuGet or docker update below 1.0 waits like the npm ones', () => {
   const rules = indexedRules()
   const merge = generalMerge(rules)
-  const nuget = rules.find(({rule}) => rule.automerge === false && rule.matchDatasources?.join() === 'nuget')
-  assert.ok(merge && nuget, 'no rule holds a pre-1.0 NuGet update back')
+  const nuget = rules.find(({rule}) => rule.automerge === false && rule.matchDatasources?.join() === 'nuget,docker')
+  assert.ok(merge && nuget, 'no rule holds a pre-1.0 NuGet or docker update back')
   assert.ok(nuget.index > merge.index, 'a later packageRule wins, so the hold must follow the automerge rule')
   assert.deepEqual([...nuget.rule.matchUpdateTypes].sort(), ['minor', 'patch'])
   const current = new RegExp(nuget.rule.matchCurrentVersion.slice(1, -1))
-  for (const version of ['0.13.3', '0.1.0-alpha.13', '0.0.4']) {
+  for (const version of ['0.13.3', '0.1.0-alpha.13', '0.0.4', 'v0.36.0']) {
     assert.match(version, current)
   }
   for (const version of ['1.0.0', '10.2.0', '2025.12.4']) {

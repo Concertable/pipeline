@@ -114,5 +114,5 @@ Checked and not retained:
   NuGet does not, so it falls back to `major` and a `TngTech.ArchUnitNET.xUnit` or `PdfPig` 0.x minor
   automerged. NuGet versions are SemVer 2.0, so the previous pass's "not retained" note calling this
   the ecosystem's own definition was wrong. Added a NuGet hold on `matchCurrentVersion: /^0\./` over
-  `minor` and `patch`, mirroring npm's treatment, exempting the first-party trains and `Reunion`
+  `minor` and `patch` for NuGet and docker (which also lacks `isBreaking`), mirroring npm's treatment, exempting the first-party trains and `Reunion`
   (published by the owner, `tomjseery/Reunion`), with a test.
