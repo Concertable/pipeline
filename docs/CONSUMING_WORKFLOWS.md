@@ -77,9 +77,12 @@ waives that age, because it is third-party supply-chain latency and these trains
 These wait on the dependency dashboard instead and never automerge:
 
 - a major update;
-- a third-party minor below 1.0, which semver allows to break;
+- a third-party minor or patch that Renovate's versioning scheme calls breaking (`matchIsBreaking`):
+  for npm, any update below 1.0 or from a prerelease. GitHub Actions are exempt because they share one
+  group, and a group needs approval as soon as one of its updates does;
 - every `expo-*` and `@expo/*` package, every other module in the Expo SDK's `bundledNativeModules.json`,
-  and their lockstep partners (`@react-native/*`, `react-test-renderer`). The SDK fixes those versions,
+  and their lockstep partners (`@react-native/*`, `react-test-renderer`, `@types/react`,
+  `@types/react-dom`). The SDK fixes those versions,
   so they move together in an SDK upgrade (`npx expo install --fix`), never alone. React is held in web
   apps too, because each repository pins one React version across its workspaces. Refresh the list from
   the new SDK's `bundledNativeModules.json` whenever the estate moves SDK.

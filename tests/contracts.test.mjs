@@ -241,7 +241,9 @@ test('every non-breaking update merges on its own green CI, third-party included
   assert.equal(merge.rule.platformAutomerge, true)
   assert.deepEqual([...merge.rule.matchUpdateTypes].sort(), ['digest', 'minor', 'patch', 'pin'])
   const holds = rules.filter(({rule}) => rule.automerge === false)
-  assert.deepEqual(holds.map(({rule}) => rule.groupName ?? rule.matchUpdateTypes.join()).sort(), ['expo sdk', 'major', 'minor'])
+  const label = ({groupName, matchIsBreaking, matchUpdateTypes, description}) =>
+    groupName ?? (matchIsBreaking ? 'breaking' : matchUpdateTypes?.join() ?? description)
+  assert.deepEqual(holds.map(({rule}) => label(rule)).sort(), ['breaking', 'expo sdk', 'major'])
   assert.ok(holds.every(({rule}) => rule.dependencyDashboardApproval === true))
 })
 
@@ -252,24 +254,21 @@ test('a major update never merges on its own', () => {
   assert.equal(major.dependencyDashboardApproval, true)
 })
 
-test('a third-party minor below 1.0 waits like a major', () => {
+test('a third-party non-major its versioning calls breaking waits like a major', () => {
   const rules = indexedRules()
   const merge = generalMerge(rules)
-  const zero = rules.find(({rule}) => rule.matchCurrentVersion !== undefined)
-  assert.ok(merge && zero, 'no rule holds a pre-1.0 minor back')
-  assert.ok(zero.index > merge.index, 'a later packageRule wins, so the hold must follow the automerge rule')
-  assert.deepEqual(zero.rule.matchUpdateTypes, ['minor'])
-  const current = new RegExp(zero.rule.matchCurrentVersion.slice(1, -1))
-  for (const version of ['0.50.3', 'v0.36.0']) {
-    assert.match(version, current)
-  }
-  for (const version of ['1.0.0', '10.2.0', 'v2.1.0']) {
-    assert.doesNotMatch(version, current)
-  }
-  assert.ok(zero.rule.matchPackageNames.every((name) => name.startsWith('!/')))
-  const exempt = zero.rule.matchPackageNames.map((name) => new RegExp(name.slice(2, -1)))
+  const breaking = rules.find(({rule}) => rule.matchIsBreaking === true)
+  assert.ok(merge && breaking, 'no rule holds a breaking non-major back')
+  assert.ok(breaking.index > merge.index, 'a later packageRule wins, so the hold must follow the automerge rule')
+  assert.deepEqual([...breaking.rule.matchUpdateTypes].sort(), ['minor', 'patch'])
+  assert.deepEqual(breaking.rule.matchManagers, ['!github-actions'])
+  assert.ok(breaking.rule.matchPackageNames.every((name) => name.startsWith('!/')))
+  const exempt = breaking.rule.matchPackageNames.map((name) => new RegExp(name.slice(2, -1)))
   for (const name of ['Concertable.Kernel', '@concertable/shared', 'ghcr.io/concertable/auth']) {
     assert.ok(exempt.some((pattern) => pattern.test(name)), `${name} is a first-party train`)
+  }
+  for (const name of ['react-native-worklets', 'class-variance-authority', 'TngTech.ArchUnitNET.xUnit']) {
+    assert.ok(!exempt.some((pattern) => pattern.test(name)), `${name} is third-party`)
   }
 })
 
@@ -285,7 +284,7 @@ test('a module the Expo SDK bundles moves only inside an SDK upgrade', () => {
   const matches = (name) => patterns.some((pattern) => typeof pattern === 'string' ? pattern === name : pattern.test(name))
   for (const name of ['expo', 'expo-image', '@expo/vector-icons', 'react', 'react-native', 'react-native-gesture-handler',
     'react-native-reanimated', 'react-native-worklets', '@stripe/stripe-react-native', '@react-native/babel-preset',
-    'react-test-renderer']) {
+    'react-test-renderer', '@types/react']) {
     assert.ok(matches(name), `${name} moves with the Expo SDK`)
   }
   for (const name of ['@expo-google-fonts/geist', 'react-native-toast-message', 'nativewind', 'expok',

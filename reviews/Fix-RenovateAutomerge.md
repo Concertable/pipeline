@@ -4,9 +4,9 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
-**Review status:** `complete`
-**Reviewed up to commit:** `f6bca8cd564bf7dac13a36340273a0c3d5c4f449`  `(2026-10-06)`
-**Judgment:** `changes-requested`
+**Review status:** `in-progress`
+**Reviewed up to commit:** `022bb95`  `(2026-10-06)`
+**Judgment:** `pending`
 
 ## Review pass — 2026-10-06 — native-general + api-contract + workflow
 
@@ -58,3 +58,41 @@ Checked and not retained:
   `expo-modules-core`, so holding them with the SDK is the safer side. Documented.
 - Scoping the hold with `matchFileNames`: the Expo manifests sit at `app/mobile/`, `packages/mobile/`
   and a workspace root, so a path filter would silently miss the root that pins `react-native`.
+
+## Review pass — 2026-10-06 — incremental `f6bca8c..022bb95` — native-general
+
+**Candidate base:** `f6bca8cd564bf7dac13a36340273a0c3d5c4f449`
+**Candidate head:** `022bb95`
+**Candidate branch:** `Fix/RenovateAutomerge`
+**Candidate scope:** `all`
+**Work-order mode:** `append`
+**Native layer:** built-in `code-review` skill, effort `high`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **HIGH — one held 0.x action would hold every GitHub Actions update.** Renovate 44 computes a
+  grouped branch's `dependencyDashboardApproval` as `some` and `automerge` as `every` of its updates
+  (`workers/repository/updates/generate.js`), so `aquasecurity/trivy-action` at `v0.36.0` reaching
+  0.37 would have parked the whole `github actions` group. The hold now carries
+  `matchManagers: ["!github-actions"]` (negation verified in `util/string-match.js`).
+
+- [x] **MEDIUM — the regex hold missed 0.0.x patches and range-pinned versions, and hid 0.x patch
+  fixes behind a held minor.** Root cause: "pre-1.0 is breaking" was rebuilt from a version-string
+  regex. Renovate 44 has a first-class `matchIsBreaking` matcher fed by each versioning scheme's
+  `isBreaking` (`util/package-rules/is-breaking.js`, `workers/repository/process/lookup/generate.js`);
+  npm's treats every update below 1.0 or from a prerelease as breaking. The regex rule is replaced by
+  `matchIsBreaking: true` over `minor` and `patch`, so pin and digest updates still flow.
+
+- [x] **MEDIUM — `@types/react` was not held with `react`.** Added `@types/react` and
+  `@types/react-dom` to the `expo sdk` group.
+
+- [x] **LOW — the exemption test never proved a third-party name stays held, and the holds label could
+  throw.** Added negative cases and a label that falls back through `matchIsBreaking` and
+  `description`.
+
+Checked and not retained:
+
+- NuGet 0.x minors now automerge: Renovate's NuGet scheme defines no `isBreaking`, so it falls back to
+  `major`. That is the ecosystem's own definition, not a gap in this rule.
+- `typescript` stays out of the hold: a mismatch is a type error the consumer's CI typecheck reports.
