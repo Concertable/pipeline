@@ -241,9 +241,9 @@ test('every non-breaking update merges on its own green CI, third-party included
   assert.equal(merge.rule.platformAutomerge, true)
   assert.deepEqual([...merge.rule.matchUpdateTypes].sort(), ['digest', 'minor', 'patch', 'pin'])
   const holds = rules.filter(({rule}) => rule.automerge === false)
-  const label = ({groupName, matchIsBreaking, matchUpdateTypes, description}) =>
-    groupName ?? (matchIsBreaking ? 'breaking' : matchUpdateTypes?.join() ?? description)
-  assert.deepEqual(holds.map(({rule}) => label(rule)).sort(), ['breaking', 'expo sdk', 'major'])
+  const label = ({groupName, matchIsBreaking, matchDatasources, matchUpdateTypes, description}) =>
+    groupName ?? (matchIsBreaking ? 'breaking' : matchDatasources?.join() ?? matchUpdateTypes?.join() ?? description)
+  assert.deepEqual(holds.map(({rule}) => label(rule)).sort(), ['breaking', 'expo sdk', 'major', 'nuget'])
   assert.ok(holds.every(({rule}) => rule.dependencyDashboardApproval === true))
 })
 
@@ -268,6 +268,29 @@ test('a third-party non-major its versioning calls breaking waits like a major',
     assert.ok(exempt.some((pattern) => pattern.test(name)), `${name} is a first-party train`)
   }
   for (const name of ['react-native-worklets', 'class-variance-authority', 'TngTech.ArchUnitNET.xUnit']) {
+    assert.ok(!exempt.some((pattern) => pattern.test(name)), `${name} is third-party`)
+  }
+})
+
+test('a third-party NuGet update below 1.0 waits like the npm ones', () => {
+  const rules = indexedRules()
+  const merge = generalMerge(rules)
+  const nuget = rules.find(({rule}) => rule.automerge === false && rule.matchDatasources?.join() === 'nuget')
+  assert.ok(merge && nuget, 'no rule holds a pre-1.0 NuGet update back')
+  assert.ok(nuget.index > merge.index, 'a later packageRule wins, so the hold must follow the automerge rule')
+  assert.deepEqual([...nuget.rule.matchUpdateTypes].sort(), ['minor', 'patch'])
+  const current = new RegExp(nuget.rule.matchCurrentVersion.slice(1, -1))
+  for (const version of ['0.13.3', '0.1.0-alpha.13', '0.0.4']) {
+    assert.match(version, current)
+  }
+  for (const version of ['1.0.0', '10.2.0', '2025.12.4']) {
+    assert.doesNotMatch(version, current)
+  }
+  const exempt = nuget.rule.matchPackageNames.map((name) => new RegExp(name.slice(2, -1)))
+  for (const name of ['Concertable.Kernel', 'Reunion', 'Reunion.Errors']) {
+    assert.ok(exempt.some((pattern) => pattern.test(name)), `${name} moves like a first-party train`)
+  }
+  for (const name of ['TngTech.ArchUnitNET.xUnit', 'PdfPig', 'ReunionOther']) {
     assert.ok(!exempt.some((pattern) => pattern.test(name)), `${name} is third-party`)
   }
 })

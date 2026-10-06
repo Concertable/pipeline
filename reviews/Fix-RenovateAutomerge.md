@@ -96,3 +96,23 @@ Checked and not retained:
 - NuGet 0.x minors now automerge: Renovate's NuGet scheme defines no `isBreaking`, so it falls back to
   `major`. That is the ecosystem's own definition, not a gap in this rule.
 - `typescript` stays out of the hold: a mismatch is a type error the consumer's CI typecheck reports.
+
+## Review pass — 2026-10-06 — incremental `022bb95..1ba5984` — native-general
+
+**Candidate base:** `022bb95`
+**Candidate head:** `1ba5984`
+**Candidate branch:** `Fix/RenovateAutomerge`
+**Candidate scope:** `all`
+**Work-order mode:** `append`
+**Native layer:** built-in `code-review` skill, effort `medium`
+**Pass judgment:** `changes-requested`
+
+### Findings
+
+- [x] **HIGH — third-party NuGet updates below 1.0 lost their hold.** Renovate 44 sets `isBreaking`
+  from the versioning scheme only where one defines it (`workers/repository/process/lookup/generate.js:58`);
+  NuGet does not, so it falls back to `major` and a `TngTech.ArchUnitNET.xUnit` or `PdfPig` 0.x minor
+  automerged. NuGet versions are SemVer 2.0, so the previous pass's "not retained" note calling this
+  the ecosystem's own definition was wrong. Added a NuGet hold on `matchCurrentVersion: /^0\./` over
+  `minor` and `patch`, mirroring npm's treatment, exempting the first-party trains and `Reunion`
+  (published by the owner, `tomjseery/Reunion`), with a test.
