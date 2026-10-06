@@ -369,7 +369,7 @@
       "minimumReleaseAge": null
     },
     {
-      "description": "A digest carries no release timestamp, so a required one would hold it forever",
+      "description": "A digest whose tag has no release timestamp would otherwise wait on the age gate forever; one with a timestamp still waits",
       "matchUpdateTypes": [
         "digest",
         "pinDigest"
