@@ -374,15 +374,19 @@
       "platformAutomerge": true
     },
     {
-      "description": "Below 1.0 a minor is a breaking update, so a third-party one waits like a major",
+      "description": "A third-party non-major its versioning calls breaking, such as any npm release below 1.0, waits like a major. GitHub Actions are exempt: they share one group, and one held action would hold them all",
+      "matchIsBreaking": true,
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchManagers": [
+        "!github-actions"
+      ],
       "matchPackageNames": [
         "!/^Concertable\\./",
         "!/^@concertable\\//",
         "!/^ghcr\\.io\\/concertable\\//"
-      ],
-      "matchCurrentVersion": "/^v?0\\./",
-      "matchUpdateTypes": [
-        "minor"
       ],
       "automerge": false,
       "dependencyDashboardApproval": true
@@ -397,6 +401,8 @@
         "/^@expo\\//",
         "/^@react-native\\//",
         "react-test-renderer",
+        "@types/react",
+        "@types/react-dom",
         "@react-native-async-storage/async-storage",
         "@react-native-community/datetimepicker",
         "@react-native-masked-view/masked-view",
