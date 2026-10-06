@@ -369,11 +369,20 @@
       "minimumReleaseAge": null
     },
     {
+      "description": "A digest carries no release timestamp, so a required one would hold it forever",
+      "matchUpdateTypes": [
+        "digest",
+        "pinDigest"
+      ],
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
+    },
+    {
       "description": "A non-breaking update merges on its own green CI",
       "matchUpdateTypes": [
         "minor",
         "patch",
         "pin",
+        "pinDigest",
         "digest"
       ],
       "automerge": true,
