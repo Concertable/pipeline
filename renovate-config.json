@@ -362,17 +362,7 @@
       "minimumReleaseAge": null
     },
     {
-      "description": "A non-breaking first-party bump merges on its own green CI",
-      "matchDatasources": [
-        "nuget",
-        "npm",
-        "docker"
-      ],
-      "matchPackageNames": [
-        "/^Concertable\\./",
-        "/^@concertable\\//",
-        "/^ghcr\\.io\\/concertable\\//"
-      ],
+      "description": "A non-breaking update merges on its own green CI",
       "matchUpdateTypes": [
         "minor",
         "patch",
@@ -382,6 +372,97 @@
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true
+    },
+    {
+      "description": "A third-party non-major its versioning calls breaking, such as any npm release below 1.0, waits like a major. GitHub Actions are exempt: they share one group, and one held action would hold them all",
+      "matchIsBreaking": true,
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchManagers": [
+        "!github-actions"
+      ],
+      "matchPackageNames": [
+        "!/^Concertable\\./",
+        "!/^@concertable\\//",
+        "!/^ghcr\\.io\\/concertable\\//"
+      ],
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Renovate gives NuGet and docker no breaking check, so a third-party update there below 1.0, which SemVer allows to break, waits like the npm ones. Reunion is the owner's own library and is exempt",
+      "matchDatasources": [
+        "nuget",
+        "docker"
+      ],
+      "matchCurrentVersion": "/^v?0\\./",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "!/^Concertable\\./",
+        "!/^@concertable\\//",
+        "!/^ghcr\\.io\\/concertable\\//",
+        "!/^Reunion(?:\\.|$)/"
+      ],
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "The Expo SDK fixes the version of every module it bundles and of each lockstep partner, so they move only inside an SDK upgrade",
+      "matchDatasources": [
+        "npm"
+      ],
+      "matchPackageNames": [
+        "/^expo(-|$)/",
+        "/^@expo\\//",
+        "/^@react-native\\//",
+        "react-test-renderer",
+        "@types/react",
+        "@types/react-dom",
+        "@react-native-async-storage/async-storage",
+        "@react-native-community/datetimepicker",
+        "@react-native-masked-view/masked-view",
+        "@react-native-community/netinfo",
+        "@react-native-community/slider",
+        "@react-native-community/viewpager",
+        "@react-native-picker/picker",
+        "@react-native-segmented-control/segmented-control",
+        "@stripe/stripe-react-native",
+        "eslint-config-expo",
+        "jest-expo",
+        "lottie-react-native",
+        "react",
+        "react-dom",
+        "react-native",
+        "react-native-web",
+        "react-native-gesture-handler",
+        "react-native-get-random-values",
+        "react-native-keyboard-controller",
+        "react-native-maps",
+        "react-native-pager-view",
+        "react-native-worklets",
+        "react-native-reanimated",
+        "react-native-screens",
+        "react-native-safe-area-context",
+        "react-native-svg",
+        "react-native-view-shot",
+        "react-native-webview",
+        "react-server-dom-webpack",
+        "sentry-expo",
+        "unimodules-app-loader",
+        "unimodules-image-loader-interface",
+        "@shopify/react-native-skia",
+        "@shopify/flash-list",
+        "@sentry/react-native",
+        "react-native-bootsplash"
+      ],
+      "groupName": "expo sdk",
+      "automerge": false,
+      "dependencyDashboardApproval": true
     }
   ]
 }
