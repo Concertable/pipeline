@@ -288,7 +288,7 @@ test('a third-party NuGet or docker update below 1.0 waits like the npm ones', (
   }
   const exempt = nuget.rule.matchPackageNames.map((name) => new RegExp(name.slice(2, -1)))
   for (const name of ['Concertable.Kernel', 'Reunion', 'Reunion.Errors']) {
-    assert.ok(exempt.some((pattern) => pattern.test(name)), `${name} moves like a first-party train`)
+    assert.ok(exempt.some((pattern) => pattern.test(name)), `${name} is exempt from the hold`)
   }
   for (const name of ['TngTech.ArchUnitNET.xUnit', 'PdfPig', 'ReunionOther']) {
     assert.ok(!exempt.some((pattern) => pattern.test(name)), `${name} is third-party`)

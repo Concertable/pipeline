@@ -116,3 +116,25 @@ Checked and not retained:
   the ecosystem's own definition was wrong. Added a NuGet hold on `matchCurrentVersion: /^0\./` over
   `minor` and `patch` for NuGet and docker (which also lacks `isBreaking`), mirroring npm's treatment, exempting the first-party trains and `Reunion`
   (published by the owner, `tomjseery/Reunion`), with a test.
+
+## Review pass — 2026-10-06 — incremental `1ba5984..5d6db55` — native-general
+
+**Candidate base:** `1ba5984`
+**Candidate head:** `5d6db55`
+**Candidate branch:** `Fix/RenovateAutomerge`
+**Candidate scope:** `all`
+**Work-order mode:** `append`
+**Native layer:** built-in `code-review` skill, effort `medium`
+**Pass judgment:** `approved`
+
+### Findings
+
+- [x] **LOW — "Reunion moves like a first-party train" overstated the exemption.** Reunion is exempt
+  from the below-1.0 hold only; it still waits the global 3-day `minimumReleaseAge`. Wording corrected
+  in the rule description, docs and test message (the following commit, a text-only change verified by
+  the parent).
+
+Checked and confirmed against Renovate 44.139: `matchCurrentVersion` regexes compare
+`lockedVersion ?? currentVersion ?? currentValue`, so the NuGet/docker hold reads the resolved
+version; all-negative `matchPackageNames` match when no exclusion does; the hold follows the
+automerge rule.
