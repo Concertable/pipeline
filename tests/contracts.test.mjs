@@ -221,19 +221,99 @@ test('a family published in lockstep moves in one pull request', () => {
 })
 
 test('a first-party train waits on nothing but its own green CI', () => {
-  const firstParty = renovateConfig().packageRules
-    .filter(({matchPackageNames}) => matchPackageNames?.includes('/^Concertable\\./'))
-  // Selected by the property each rule carries, not by position: they share a package pattern, so
-  // a third rule matching it silently repointed both of these at the wrong object.
-  const age = firstParty.find((rule) => 'minimumReleaseAge' in rule)
-  const merge = firstParty.find((rule) => rule.automerge !== undefined)
-  assert.ok(age && merge)
+  const age = renovateConfig().packageRules
+    .find(({matchPackageNames, minimumReleaseAge}) => matchPackageNames?.includes('/^Concertable\\./') && minimumReleaseAge !== undefined)
+  assert.ok(age, 'no rule waives minimumReleaseAge for the first-party trains')
   // minimumReleaseAge is third-party supply-chain latency. Applied to a train that publishes per
   // commit it only delays the estate against itself.
   assert.equal(age.minimumReleaseAge, null)
-  assert.equal(merge.automerge, true)
-  assert.equal(merge.platformAutomerge, true)
-  assert.ok(!merge.matchUpdateTypes.includes('major'))
+})
+
+const indexedRules = () => renovateConfig().packageRules.map((rule, index) => ({rule, index}))
+const generalMerge = (rules) => rules.find(({rule}) => rule.automerge === true)
+
+test('every non-breaking update merges on its own green CI, third-party included', () => {
+  const rules = indexedRules()
+  const merge = generalMerge(rules)
+  assert.ok(merge, 'no rule automerges anything')
+  assert.equal(merge.rule.matchPackageNames, undefined)
+  assert.equal(merge.rule.matchDatasources, undefined)
+  assert.equal(merge.rule.platformAutomerge, true)
+  assert.deepEqual([...merge.rule.matchUpdateTypes].sort(), ['digest', 'minor', 'patch', 'pin'])
+  const holds = rules.filter(({rule}) => rule.automerge === false)
+  const label = ({groupName, matchIsBreaking, matchDatasources, matchUpdateTypes, description}) =>
+    groupName ?? (matchIsBreaking ? 'breaking' : matchDatasources?.join() ?? matchUpdateTypes?.join() ?? description)
+  assert.deepEqual(holds.map(({rule}) => label(rule)).sort(), ['breaking', 'expo sdk', 'major', 'nuget,docker'])
+  assert.ok(holds.every(({rule}) => rule.dependencyDashboardApproval === true))
+})
+
+test('a major update never merges on its own', () => {
+  const major = renovateConfig().packageRules.find(({matchUpdateTypes}) => matchUpdateTypes?.includes('major'))
+  assert.ok(major, 'no rule holds major updates')
+  assert.equal(major.automerge, false)
+  assert.equal(major.dependencyDashboardApproval, true)
+})
+
+test('a third-party non-major its versioning calls breaking waits like a major', () => {
+  const rules = indexedRules()
+  const merge = generalMerge(rules)
+  const breaking = rules.find(({rule}) => rule.matchIsBreaking === true)
+  assert.ok(merge && breaking, 'no rule holds a breaking non-major back')
+  assert.ok(breaking.index > merge.index, 'a later packageRule wins, so the hold must follow the automerge rule')
+  assert.deepEqual([...breaking.rule.matchUpdateTypes].sort(), ['minor', 'patch'])
+  assert.deepEqual(breaking.rule.matchManagers, ['!github-actions'])
+  assert.ok(breaking.rule.matchPackageNames.every((name) => name.startsWith('!/')))
+  const exempt = breaking.rule.matchPackageNames.map((name) => new RegExp(name.slice(2, -1)))
+  for (const name of ['Concertable.Kernel', '@concertable/shared', 'ghcr.io/concertable/auth']) {
+    assert.ok(exempt.some((pattern) => pattern.test(name)), `${name} is a first-party train`)
+  }
+  for (const name of ['react-native-worklets', 'class-variance-authority', 'TngTech.ArchUnitNET.xUnit']) {
+    assert.ok(!exempt.some((pattern) => pattern.test(name)), `${name} is third-party`)
+  }
+})
+
+test('a third-party NuGet or docker update below 1.0 waits like the npm ones', () => {
+  const rules = indexedRules()
+  const merge = generalMerge(rules)
+  const nuget = rules.find(({rule}) => rule.automerge === false && rule.matchDatasources?.join() === 'nuget,docker')
+  assert.ok(merge && nuget, 'no rule holds a pre-1.0 NuGet or docker update back')
+  assert.ok(nuget.index > merge.index, 'a later packageRule wins, so the hold must follow the automerge rule')
+  assert.deepEqual([...nuget.rule.matchUpdateTypes].sort(), ['minor', 'patch'])
+  const current = new RegExp(nuget.rule.matchCurrentVersion.slice(1, -1))
+  for (const version of ['0.13.3', '0.1.0-alpha.13', '0.0.4', 'v0.36.0']) {
+    assert.match(version, current)
+  }
+  for (const version of ['1.0.0', '10.2.0', '2025.12.4']) {
+    assert.doesNotMatch(version, current)
+  }
+  const exempt = nuget.rule.matchPackageNames.map((name) => new RegExp(name.slice(2, -1)))
+  for (const name of ['Concertable.Kernel', 'Reunion', 'Reunion.Errors']) {
+    assert.ok(exempt.some((pattern) => pattern.test(name)), `${name} is exempt from the hold`)
+  }
+  for (const name of ['TngTech.ArchUnitNET.xUnit', 'PdfPig', 'ReunionOther']) {
+    assert.ok(!exempt.some((pattern) => pattern.test(name)), `${name} is third-party`)
+  }
+})
+
+test('a module the Expo SDK bundles moves only inside an SDK upgrade', () => {
+  const rules = indexedRules()
+  const merge = generalMerge(rules)
+  const expo = rules.find(({rule}) => rule.groupName === 'expo sdk')
+  assert.ok(merge && expo, 'no rule holds the Expo SDK modules back')
+  assert.ok(expo.index > merge.index, 'a later packageRule wins, so the Expo rule must follow the automerge rule')
+  assert.equal(expo.rule.automerge, false)
+  assert.equal(expo.rule.dependencyDashboardApproval, true)
+  const patterns = expo.rule.matchPackageNames.map((name) => name.startsWith('/') ? new RegExp(name.slice(1, -1)) : name)
+  const matches = (name) => patterns.some((pattern) => typeof pattern === 'string' ? pattern === name : pattern.test(name))
+  for (const name of ['expo', 'expo-image', '@expo/vector-icons', 'react', 'react-native', 'react-native-gesture-handler',
+    'react-native-reanimated', 'react-native-worklets', '@stripe/stripe-react-native', '@react-native/babel-preset',
+    'react-test-renderer', '@types/react']) {
+    assert.ok(matches(name), `${name} moves with the Expo SDK`)
+  }
+  for (const name of ['@expo-google-fonts/geist', 'react-native-toast-message', 'nativewind', 'expok',
+    '@react-native-firebase/app']) {
+    assert.ok(!matches(name), `${name} does not move with the Expo SDK`)
+  }
 })
 
 test('a first-party package is only ever looked up on the organization feed', () => {

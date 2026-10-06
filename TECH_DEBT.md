@@ -80,9 +80,14 @@ per the evidence above, would change nothing.
 So a credential is the only route:
 
 - Mint a token with `read:packages` that can see the organization's packages.
-- Give it to Renovate as a `hostRules` entry for `nuget.pkg.github.com`, with the token encrypted at
-  Mend's encryption endpoint so no secret enters this repository in plaintext — or set it in the Mend
-  Developer Platform against the organization.
+- Give it to Renovate as `hostRules` entries for `nuget.pkg.github.com` and `npm.pkg.github.com`, with
+  the token encrypted at Mend's encryption endpoint so no secret enters this repository in plaintext —
+  or set it in the Mend Developer Platform against the organization.
 
-**Resolves when:** a Renovate run raises a `Concertable.*` pin in a consumer repository, and no
-dependency dashboard reports `no-result` for a first-party package.
+npm hits the same 401 from the other side: an update to a workspace whose lockfile resolves
+`@concertable/*` from the feed must regenerate that lockfile, the tarball fetch answers E401,
+`renovate/artifacts` goes red, and the PR can never merge. `b2b`'s `app/mobile` fails this way today.
+
+**Resolves when:** a Renovate run raises a `Concertable.*` pin in a consumer repository, no dependency
+dashboard reports `no-result` for a first-party package, and no Renovate PR carries a red
+`renovate/artifacts` for an E401.
