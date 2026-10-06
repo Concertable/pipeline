@@ -70,11 +70,19 @@ The preset reads three pin owners: every release-train property in `Directory.Pa
 Each producer's packages and its images share one group, so a train's package pin and its image digest
 move in one pull request — which is what keeps a consumer's two declarations of one version equal.
 
-Every minor, patch, pin and digest update automerges on its own green `ci-complete` through the merge
-queue. A first-party update also waives `minimumReleaseAge`, because that delay is third-party
-supply-chain latency and these trains publish per commit. A major update never automerges and waits on
-the dependency dashboard, as does every module in the Expo SDK's `bundledNativeModules.json`: the SDK
-fixes those versions, so they move together in an SDK upgrade (`npx expo install --fix`), never alone.
+Every minor, patch, pin and digest update, GitHub Actions included, automerges on its own green
+`ci-complete` through the merge queue once it is 3 days old (`minimumReleaseAge`). A first-party update
+waives that age, because it is third-party supply-chain latency and these trains publish per commit.
+
+These wait on the dependency dashboard instead and never automerge:
+
+- a major update;
+- a third-party minor below 1.0, which semver allows to break;
+- every `expo-*` and `@expo/*` package, every other module in the Expo SDK's `bundledNativeModules.json`,
+  and their lockstep partners (`@react-native/*`, `react-test-renderer`). The SDK fixes those versions,
+  so they move together in an SDK upgrade (`npx expo install --fix`), never alone. React is held in web
+  apps too, because each repository pins one React version across its workspaces. Refresh the list from
+  the new SDK's `bundledNativeModules.json` whenever the estate moves SDK.
 
 Renovate raises third-party updates today. It raises **no first-party pin**: the feed answers 401 to
 its platform token, so every `Concertable.*` lookup fails. `TECH_DEBT.md` carries what closes that.
