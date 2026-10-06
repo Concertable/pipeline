@@ -239,12 +239,19 @@ test('every non-breaking update merges on its own green CI, third-party included
   assert.equal(merge.rule.matchPackageNames, undefined)
   assert.equal(merge.rule.matchDatasources, undefined)
   assert.equal(merge.rule.platformAutomerge, true)
-  assert.deepEqual([...merge.rule.matchUpdateTypes].sort(), ['digest', 'minor', 'patch', 'pin'])
+  assert.deepEqual([...merge.rule.matchUpdateTypes].sort(), ['digest', 'minor', 'patch', 'pin', 'pinDigest'])
   const holds = rules.filter(({rule}) => rule.automerge === false)
   const label = ({groupName, matchIsBreaking, matchDatasources, matchUpdateTypes, description}) =>
     groupName ?? (matchIsBreaking ? 'breaking' : matchDatasources?.join() ?? matchUpdateTypes?.join() ?? description)
   assert.deepEqual(holds.map(({rule}) => label(rule)).sort(), ['breaking', 'major', 'nuget,docker'])
   assert.ok(holds.every(({rule}) => rule.dependencyDashboardApproval === true))
+})
+
+test('a digest update clears the release-age gate without a release timestamp', () => {
+  const rule = renovateConfig().packageRules.find(({minimumReleaseAgeBehaviour}) => minimumReleaseAgeBehaviour)
+  assert.ok(rule, 'every digest update stays pending on renovate/stability-days forever')
+  assert.equal(rule.minimumReleaseAgeBehaviour, 'timestamp-optional')
+  assert.deepEqual([...rule.matchUpdateTypes].sort(), ['digest', 'pinDigest'])
 })
 
 test('a major update never merges on its own', () => {
