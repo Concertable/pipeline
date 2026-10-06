@@ -221,19 +221,49 @@ test('a family published in lockstep moves in one pull request', () => {
 })
 
 test('a first-party train waits on nothing but its own green CI', () => {
-  const firstParty = renovateConfig().packageRules
-    .filter(({matchPackageNames}) => matchPackageNames?.includes('/^Concertable\\./'))
-  // Selected by the property each rule carries, not by position: they share a package pattern, so
-  // a third rule matching it silently repointed both of these at the wrong object.
-  const age = firstParty.find((rule) => 'minimumReleaseAge' in rule)
-  const merge = firstParty.find((rule) => rule.automerge !== undefined)
-  assert.ok(age && merge)
+  const age = renovateConfig().packageRules
+    .find(({matchPackageNames, minimumReleaseAge}) => matchPackageNames?.includes('/^Concertable\\./') && minimumReleaseAge !== undefined)
   // minimumReleaseAge is third-party supply-chain latency. Applied to a train that publishes per
   // commit it only delays the estate against itself.
   assert.equal(age.minimumReleaseAge, null)
-  assert.equal(merge.automerge, true)
+})
+
+const automergeRules = () => renovateConfig().packageRules
+  .map((rule, index) => ({rule, index}))
+  .filter(({rule}) => rule.automerge !== undefined)
+
+test('every non-breaking update merges on its own green CI, third-party included', () => {
+  const merge = automergeRules().find(({rule}) => rule.automerge === true)?.rule
+  assert.ok(merge, 'no rule automerges anything')
+  assert.equal(merge.matchPackageNames, undefined)
+  assert.equal(merge.matchDatasources, undefined)
   assert.equal(merge.platformAutomerge, true)
-  assert.ok(!merge.matchUpdateTypes.includes('major'))
+  assert.deepEqual([...merge.matchUpdateTypes].sort(), ['digest', 'minor', 'patch', 'pin'])
+})
+
+test('a major update never merges on its own', () => {
+  const major = renovateConfig().packageRules.find(({matchUpdateTypes}) => matchUpdateTypes?.join() === 'major')
+  assert.equal(major.automerge, false)
+  assert.equal(major.dependencyDashboardApproval, true)
+})
+
+test('a module the Expo SDK bundles moves only inside an SDK upgrade', () => {
+  const rules = automergeRules()
+  const expo = rules.find(({rule}) => rule.groupName === 'expo sdk')
+  const merge = rules.find(({rule}) => rule.automerge === true)
+  assert.ok(expo, 'no rule holds the Expo SDK modules back')
+  assert.ok(expo.index > merge.index, 'a later packageRule wins, so the Expo rule must follow the automerge rule')
+  assert.equal(expo.rule.automerge, false)
+  assert.equal(expo.rule.dependencyDashboardApproval, true)
+  const patterns = expo.rule.matchPackageNames.map((name) => name.startsWith('/') ? new RegExp(name.slice(1, -1)) : name)
+  const matches = (name) => patterns.some((pattern) => typeof pattern === 'string' ? pattern === name : pattern.test(name))
+  for (const name of ['expo', 'expo-image', '@expo/vector-icons', 'react', 'react-native', 'react-native-gesture-handler',
+    'react-native-reanimated', 'react-native-worklets', '@stripe/stripe-react-native']) {
+    assert.ok(matches(name), `${name} is bundled by the Expo SDK`)
+  }
+  for (const name of ['@expo-google-fonts/geist', 'react-native-toast-message', 'nativewind', 'expok']) {
+    assert.ok(!matches(name), `${name} is not bundled by the Expo SDK`)
+  }
 })
 
 test('a first-party package is only ever looked up on the organization feed', () => {
