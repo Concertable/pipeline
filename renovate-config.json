@@ -392,6 +392,25 @@
       "dependencyDashboardApproval": true
     },
     {
+      "description": "Renovate gives NuGet no breaking check, so a third-party NuGet update below 1.0, which SemVer allows to break, waits like the npm ones. Reunion is the owner's own library and moves like a first-party train",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchCurrentVersion": "/^0\\./",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "!/^Concertable\\./",
+        "!/^@concertable\\//",
+        "!/^ghcr\\.io\\/concertable\\//",
+        "!/^Reunion(?:\\.|$)/"
+      ],
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    },
+    {
       "description": "The Expo SDK fixes the version of every module it bundles and of each lockstep partner, so they move only inside an SDK upgrade",
       "matchDatasources": [
         "npm"
