@@ -72,7 +72,9 @@ move in one pull request — which is what keeps a consumer's two declarations o
 
 Every minor, patch, pin and digest update, GitHub Actions included, automerges on its own green
 `ci-complete` through the merge queue once it is 3 days old (`minimumReleaseAge`). A first-party update
-waives that age, because it is third-party supply-chain latency and these trains publish per commit.
+waives that age, because it is third-party supply-chain latency and these trains publish per commit. A
+digest whose tag has no release timestamp, such as a floating action ref, skips the gate rather than
+waiting on it forever; a digest with a timestamp still waits.
 
 These wait on the dependency dashboard instead and never automerge:
 

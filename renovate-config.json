@@ -369,11 +369,20 @@
       "minimumReleaseAge": null
     },
     {
+      "description": "A digest whose tag has no release timestamp would otherwise wait on the age gate forever; one with a timestamp still waits",
+      "matchUpdateTypes": [
+        "digest",
+        "pinDigest"
+      ],
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
+    },
+    {
       "description": "A non-breaking update merges on its own green CI",
       "matchUpdateTypes": [
         "minor",
         "patch",
         "pin",
+        "pinDigest",
         "digest"
       ],
       "automerge": true,
