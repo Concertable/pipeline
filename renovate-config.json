@@ -374,13 +374,29 @@
       "platformAutomerge": true
     },
     {
-      "description": "The Expo SDK fixes the version of every module in its bundledNativeModules.json, so each moves only inside an SDK upgrade",
+      "description": "Below 1.0 a minor is a breaking update, so a third-party one waits like a major",
+      "matchPackageNames": [
+        "!/^Concertable\\./",
+        "!/^@concertable\\//",
+        "!/^ghcr\\.io\\/concertable\\//"
+      ],
+      "matchCurrentVersion": "/^v?0\\./",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "The Expo SDK fixes the version of every module it bundles and of each lockstep partner, so they move only inside an SDK upgrade",
       "matchDatasources": [
         "npm"
       ],
       "matchPackageNames": [
         "/^expo(-|$)/",
         "/^@expo\\//",
+        "/^@react-native\\//",
+        "react-test-renderer",
         "@react-native-async-storage/async-storage",
         "@react-native-community/datetimepicker",
         "@react-native-masked-view/masked-view",
