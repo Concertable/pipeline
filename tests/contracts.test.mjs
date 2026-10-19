@@ -6,7 +6,10 @@ import test from 'node:test'
 
 const workflowsDirectory = new URL('../.github/workflows/', import.meta.url)
 const workflowNames = readdirSync(workflowsDirectory).filter((name) => name.endsWith('.yml'))
-const reusableNames = workflowNames.filter((name) => name !== 'ci.yml')
+// Published contracts declare workflow_call; repository-only CI gates are consumers themselves.
+const reusableNames = workflowNames.filter((name) =>
+  /^  workflow_call:/m.test(readFileSync(new URL(name, workflowsDirectory), 'utf8')),
+)
 
 test('the repository exposes every required reusable workflow contract', () => {
   assert.deepEqual(reusableNames.sort(), [
