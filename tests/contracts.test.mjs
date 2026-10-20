@@ -6,7 +6,7 @@ import test from 'node:test'
 
 const workflowsDirectory = new URL('../.github/workflows/', import.meta.url)
 const workflowNames = readdirSync(workflowsDirectory).filter((name) => name.endsWith('.yml'))
-const reusableNames = workflowNames.filter((name) => name !== 'ci.yml')
+const reusableNames = workflowNames.filter((name) => !['ci.yml', 'check-personal-policy.yml'].includes(name))
 
 test('the repository exposes every required reusable workflow contract', () => {
   assert.deepEqual(reusableNames.sort(), [
