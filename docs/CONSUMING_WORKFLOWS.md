@@ -51,9 +51,10 @@ policy-bearing fields, including the repository settings in `repository-settings
 
 The main ruleset requires one approving review of the latest push. Agent PRs are opened by a GitHub App,
 not by the human maintainer, so the maintainer can approve them; GitHub still forbids an app from
-approving its own pull request. Renovate is a bypass actor with `bypass_mode: pull_request`, so its own
-automerging dependency PRs still land without a human approval; the admin `RepositoryRole` bypass stays
-for emergencies.
+approving its own pull request. Renovate's automerging PRs are approved by the `renovate-approve` app,
+which approves only PRs Renovate set to automerge, so they still pass through the queue and `ci-complete`.
+Without that app installed they wait for a human approval. The admin `RepositoryRole` bypass skips the
+queue and its checks, so it is for emergencies only.
 
 The accepted manifest shapes are documented in [MANIFEST_CONTRACTS.md](MANIFEST_CONTRACTS.md). They deliberately
 record dependency names and immutable digests/versions in a Renovate-readable form.
