@@ -1,9 +1,5 @@
 version: 1
 
-source:
-  repository: Concertable/concertable
-  commit: d6f986c2570d994891767bcb1a10fd797d2b854e
-
 platform:
   packages: 0.2.0-alpha.0.5
 
