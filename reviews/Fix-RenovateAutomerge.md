@@ -5,13 +5,13 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `af2bdad4ba846c3aa7c6f48cba442bd9ddbaef67`  `(2026-10-06)`
+**Reviewed up to commit:** `5810766c24b196811b10b6bd8946bd1fd66f593f`  `(2026-10-06)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-10-06 — native-general + api-contract + workflow
 
-**Candidate base:** `7b78840e1a2bb9cef76cc5d974caa0d801d5ed65`
-**Candidate head:** `f6bca8cd564bf7dac13a36340273a0c3d5c4f449`
+**Candidate base:** `9f18349f04219646a0b397166883b9e084377dc7`
+**Candidate head:** `1f28270adf096b8750d56bbf72431b1085ba1bae`
 **Candidate branch:** `Fix/RenovateAutomerge`
 **Candidate scope:** `all`
 **Candidate path-set:** `sha256:11e28e82c8f023b2dc4e6db24bc36a98f4ea2e07fe1e5a7b452d70bba289c336` `(3 paths)`
@@ -61,7 +61,7 @@ Checked and not retained:
 
 ## Review pass — 2026-10-06 — incremental `f6bca8c..022bb95` — native-general
 
-**Candidate base:** `f6bca8cd564bf7dac13a36340273a0c3d5c4f449`
+**Candidate base:** `1f28270adf096b8750d56bbf72431b1085ba1bae`
 **Candidate head:** `022bb95`
 **Candidate branch:** `Fix/RenovateAutomerge`
 **Candidate scope:** `all`

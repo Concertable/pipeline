@@ -5,13 +5,13 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `a920714bd41b6cf8b8cd2d6bf58b3199347ed476`  `(2026-09-19)`
+**Reviewed up to commit:** `2b2a6d7dd2b465ed1e45a56cb1d0c39f449d578d`  `(2026-09-19)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-19 — native-general + renovate-config correctness
 
-**Candidate base:** `ea6b494231ae0ea7c403d6933b952376164d04b2`
-**Candidate head:** `a920714bd41b6cf8b8cd2d6bf58b3199347ed476`
+**Candidate base:** `0056edbc1603074339e2c8b46f93cd828c40f746`
+**Candidate head:** `2b2a6d7dd2b465ed1e45a56cb1d0c39f449d578d`
 **Candidate branch:** `Fix/RenovateSilentMode`
 **Candidate scope:** `all`
 **Candidate path-set:** `sha256:11e28e82c8f023b2dc4e6db24bc36a98f4ea2e07fe1e5a7b452d70bba289c336` `(3 paths)`

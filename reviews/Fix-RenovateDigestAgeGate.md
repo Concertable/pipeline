@@ -5,18 +5,18 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `f0461a8df82edfe73cac9a3f733c09ca729a156a`  `(2026-10-06)`
+**Reviewed up to commit:** `fd0c64c7228647c84893a94b989869724319e584`  `(2026-10-06)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-10-06 — native-general
 
-**Candidate base:** `692fc2ab5a3ad189731f24643177999e206fbb1d`
-**Candidate head:** `f0461a8df82edfe73cac9a3f733c09ca729a156a`
+**Candidate base:** `6abd4b81a65844785590b07d9583aefaf4207093`
+**Candidate head:** `fd0c64c7228647c84893a94b989869724319e584`
 **Candidate branch:** `Fix/RenovateDigestAgeGate`
 **Candidate scope:** `all`
 **Work-order mode:** `new`
 **Native layer:** built-in `code-review` skill, effort `medium`, over `66238d2..a8d1a9e`; these
-commits are cherry-picks of that reviewed patch (`8acd3d51eef8044fa51357b51af37bc1762d0582`) and its wording fix (`f0461a8df82edfe73cac9a3f733c09ca729a156a`) after
+commits are cherry-picks of that reviewed patch (`b041832929819960d3ada51ca90260c8bc040ceb`) and its wording fix (`fd0c64c7228647c84893a94b989869724319e584`) after
 Fix/RenovateSkipMobile merged without them.
 **Pass judgment:** `approved`
 

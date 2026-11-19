@@ -5,13 +5,13 @@
 > irreversible or ambiguous finding: record its durable disposition, take the safe path, and keep going.
 
 **Review status:** `complete`
-**Reviewed up to commit:** `9957b43a3b22c8923bb93a0956f670dbfc2bd1f3`  `(2026-09-19)`
+**Reviewed up to commit:** `2f314046eae176bfc4db2ac20f801c5b7d427a95`  `(2026-09-19)`
 **Judgment:** `approved`
 
 ## Review pass — 2026-09-19 — docs
 
-**Candidate base:** `7ca7f3a2a41f436bdb03d83ee8da8056e7869766`
-**Candidate head:** `9957b43a3b22c8923bb93a0956f670dbfc2bd1f3`
+**Candidate base:** `94ce07fa8dc449f7c126313cddf0ee0c2c162d32`
+**Candidate head:** `2f314046eae176bfc4db2ac20f801c5b7d427a95`
 **Candidate branch:** `Docs/DependabotSplitDebt`
 **Candidate scope:** `all`
 **Candidate path-set:** `sha256:39cf1866d62b9877b98a45948885c19745a1ce5169276f1283de23f1d27f1f8f` `(1 paths)`
