@@ -1,0 +1,31 @@
+{
+  "authorization_resolution": {
+    "standing": "absent",
+    "stopped_by": {
+      "class": "no-recorded-authorization"
+    }
+  },
+  "auto_merge": false,
+  "bound_at": "2026-11-10T21:30:59.623173+00:00",
+  "branch": "Chore/RetireArchivedMonorepo",
+  "changed_path_count": 1,
+  "completion_condition": "the bound PR reaches MERGED, or a recorded terminal ends this delivery",
+  "head": "c9eeb1cc739fcdd5d21b716cf4bfdb00e26dd6a2",
+  "merge_authorization": {
+    "instruction": null,
+    "mode": "absent"
+  },
+  "pending_evidence": [],
+  "pr": 28,
+  "pr_url": "https://github.com/Concertable/pipeline/pull/28",
+  "repo": "Concertable/pipeline",
+  "review": {
+    "reviewed_sha": "c9eeb1cc739fcdd5d21b716cf4bfdb00e26dd6a2",
+    "work_order": "C:\\Users\\TommySeery\\source\\repos\\Concertable\\pipeline\\.git\\agent-workflow\\reviews\\60f98abb0ca387ce646ae1ab1bd1c7ec53be09b70fb25c1f9e6e5ad8e3ae167a\\work-order.md",
+    "work_order_order": [
+      "full"
+    ]
+  },
+  "schema_version": 1,
+  "worktree": "C:\\Users\\TommySeery\\source\\repos\\Concertable\\pipeline\\pipeline.worktrees\\Chore-RetireArchivedMonorepo"
+}
